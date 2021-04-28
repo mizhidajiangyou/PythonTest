@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # 必要参数设置
 # 设置报告路径op
 path="/home/output/"
