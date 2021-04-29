@@ -37,7 +37,7 @@ index = np.arange(len(labels))
 width = 0.2
 
 fig, ax = plt.subplots()
-rect1 = ax.bar(range(len(num_list)), num_list, color ='#springgreen', width=width, label='BW')
+rect1 = ax.bar(range(len(num_list)), num_list, color ='springgreen', width=width, label='BW')
 #rect2 = ax.bar(index + width / 2, women_means, color ='springgreen', width=width, label ='Women')
 #标题
 ax.set_title('test-title')
