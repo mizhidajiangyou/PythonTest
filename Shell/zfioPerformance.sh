@@ -457,7 +457,7 @@ case $3 in
     getMax bw
     ;;
 2)
-    echo "**only bar**"
+    echo "**only Bar**"
     getTestList
     createFile    
     barBuild bw
@@ -469,8 +469,14 @@ case $3 in
     createFile
     getMax bw
     ;;
+4)
+    echo "**only Fio**"
+    getTestList
+    createFile
+    fioTest
+    ;;
 *)
-    echo "eerror!no this type!"
+    echo "error!no this type!"
     exit 0
     ;;
 esac
