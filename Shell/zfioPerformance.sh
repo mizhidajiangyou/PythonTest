@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # 必要参数设置
 # 设置报告路径op
 path="/home/output/"
@@ -13,6 +14,7 @@ rpname=()
 #文件存放目录
 fileList=()
 pngList=()
+
 
 # fileAddress=${path}${op}
 # 创建测试目录
@@ -95,8 +97,7 @@ allReportCreate(){
         cat ${fileList[${i}]} |grep -B 1 "BW=" >> ${path}${op}-all-${date}
     done
 }
-
-#替换
+#替换（传参有误，待优化）
 th(){
     for ((i=0;i<${#ioway[*]};i++))
     do
@@ -117,6 +118,7 @@ th(){
                 rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
                 #echo $2                
                 #echo ${rname}
+                
                 num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "(" -f2 | cut -d ")" -f1`
                 echo ${num:0-4}
                 echo "==============="${num:0:0-4}
@@ -166,17 +168,132 @@ barBuild(){
     bw)
         echo "create bwPNG"
         # 修改y轴
-        sed -i "s!miaoshu!MB/s!g" bar.py
-        th bw 
+        # sed -i "s!miaoshu!MB/s!g" bar.py
+        # 替换
+        for ((i=0;i<${#ioway[*]};i++))
+        do
+        echo ${rpname[*]}
+        # 定义数据来源文件
+        rp=${fileList[${i}]}
+        echo "from:"${rp}"building png"        
+        for ((j=0;j<${#block[*]};j++))
+        do
+            # 修改y轴
+            sed -i "s!miaoshu!MB/s!g" bar.py
+            # 替换标题
+            barTitle=${ioway[${i}]}-${block[${j}]}-$1
+            echo ${barTitle}
+            sed -i "s/test-title/${barTitle}/" bar.py            
+            #替换具体参数
+            
+            for ((k=0;k<${#rwway[*]};k++))
+            do
+                rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
+                num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "(" -f2 | cut -d ")" -f1`
+                # 单位
+                #echo ${num:0-4}
+                # 数值
+                #echo ${num:0:0-4}
+                #if ${num:0-4} -eq "kB/s";then
+                    #num=${num:0:0-4}/1024
+                #fi
+                
+                # 替换x轴标注
+                sed -i "s!mmm${k}!${num:0:0-4}!g" bar.py
+                # 替换数值
+                sed -i "s!label${k}!${rname}!g" bar.py 
+            done   
+            # 定义PNG
+            sed -i "s!barpng!${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png!g" bar.py
+            # 执行py文件
+            python3 bar.py
+            # 复原
+            # for ((k=0;k<${#rwway[*]};k++))
+            # do
+                # rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
+                # num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "(" -f2 | cut -d ")" -f1`
+                # echo ${num:0-4}
+                # echo "==============="num=${num:0:0-4}
+                # #if ${num:0-4} -eq "kB/s";then
+                    # #num=${num:0:0-4}/1024
+                # #fi
+                # # 替换x轴标注
+                # sed -i "s!${num:0:0-4}!mmm${k}!g" bar.py
+                # # 替换数值
+                # sed -i "s!${rname}!label${k}!g" bar.py 
+            # done            
+            # sed -i "s/${barTitle}/test-title/" bar.py
+            # echo "${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png"
+            # sed -i "s!${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png!barpng!g" bar.py
+            sleep 1
+            rm bar.py
+            cp bar.py-bak bar.py
+            done
+        
+        done
+
         # 复原
-        sed -i "s!MB/s!miaoshu!g" bar.py
+        #sed -i "s!MB/s!miaoshu!g" bar.py
         ;;
     iops)
         echo "create iopsPNG"
+        # 替换
+        for ((i=0;i<${#ioway[*]};i++))
+        do
         # 修改y轴
         sed -i "s!miaoshu!IOPS!g" bar.py
-        th iops "`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`"
-        sed -i "s!IOPS!miaoshu!g" bar.py
+        #echo ${rpname[*]}
+        # 定义数据来源文件
+        rp=${fileList[${i}]}
+        echo "from:"${rp}"building png"        
+        for ((j=0;j<${#block[*]};j++))
+        do
+            # 替换标题
+            barTitle=${ioway[${i}]}-${block[${j}]}-$1
+            echo ${barTitle}
+            sed -i "s/test-title/${barTitle}/" bar.py            
+            #替换具体参数
+            
+            for ((k=0;k<${#rwway[*]};k++))
+            do
+                rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
+                #echo $2                
+                #echo ${rname}
+                num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
+                
+
+                # 替换x轴标注
+                sed -i "s!mmm${k}!${num}!g" bar.py
+                # 替换数值
+                sed -i "s!label${k}!${rname}!g" bar.py 
+            done   
+            # 定义PNG
+            sed -i "s!barpng!${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png!g" bar.py
+            # 执行py文件
+            python3 bar.py
+
+            # 复原
+            # for ((k=0;k<${#rwway[*]};k++))
+            # do
+                # rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
+                # num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`                
+                # # 替换x轴标注
+                # sed -i "s!${num}!mmm${k}!g" bar.py
+                # # 替换数值
+                # sed -i "s!${rname}!label${k}!g" bar.py 
+            # done            
+            # sed -i "s/${barTitle}/test-title/" bar.py
+            # echo "${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png"
+            # sed -i "s!${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png!barpng!g" bar.py
+
+            sleep 1
+            rm bar.py
+            cp bar.py-bak bar.py
+            done
+        
+        done
+
+        #sed -i "s!IOPS!miaoshu!g" bar.py
         ;;
     *)
         echo "error! no this type"
@@ -184,6 +301,112 @@ barBuild(){
         ;;
     esac
 
+}
+# 生成表格
+tableCreate(){
+    # randwrite randread write read
+    tableFile="${path}${op}-all-${date}.table"
+    for ((i=0;i<${#ioway[*]};i++))
+    do
+        # 定义数据来源文件
+        rp=${fileList[${i}]}
+        echo "from:"${rp}" building table" 
+        echo "=================================================${ioway[${i}]}=================================================" >> ${tableFile}       
+        
+        
+        # 定义输出文件
+        for ((j=0;j<${#block[*]};j++))
+        do
+            echo "************************************${block[${j}]}************************************" >> ${tableFile}     
+            echo "
+---------------------------------------------------------------------------------------------
+|                    |    block随机写      |    block随机读    |    block顺序写    |    block顺序读    |
+---------------------------------------------------------------------------------------------
+|  吞吐(MB/S)        |    m0bw     |    m1bw     |     m2bw     |     m3bw    |
+---------------------------------------------------------------------------------------------
+|  IOPS              |       m0iops       |       m1iops      |       m2iops       |      m3iops      |
+---------------------------------------------------------------------------------------------
+|  slat (usec)       |     m0slat     |    m1slat    |    m2slat    |    m3slat    |
+---------------------------------------------------------------------------------------------
+|  clat (usec)       |    m0clat    |    m1clat    |    m2clat    |    m3clat    |
+
+----------------------------------------------------------------------------------------------" >>  ${tableFile}  
+            sed -i "s!block!${block[${j}]}!g" ${tableFile} 
+            
+            for ((k=0;k<${#rwway[*]};k++))
+            do
+                rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
+                #echo $2                
+                #echo ${rname}
+                bw=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "(" -f2 | cut -d ")" -f1`
+                iops=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
+                slat=`cat ${rp} |grep -C 2 "BW=" | grep -A 3 ${rname} | sed -n "3,1p" | awk '{print $5}' | cut -d "=" -f2 | cut -d "," -f1`
+                clat=`cat ${rp} |grep -C 2 "BW=" | grep -A 3 ${rname} | sed -n "4,1p" | awk '{print $5}' | cut -d "=" -f2 | cut -d "," -f1`
+                sed -i "s!m${k}bw!${bw}!g" ${tableFile} 
+                sed -i "s!m${k}iops!${iops}!g" ${tableFile} 
+                sed -i "s!m${k}slat!${slat}!g" ${tableFile} 
+                sed -i "s!m${k}clat!${clat}!g" ${tableFile} 
+                
+            done   
+            
+        done            
+            
+            
+        
+    done
+}
+# 最大值生成
+getMax(){
+#预置参数预防获取不到值的情况
+    max=(0 0 0 0 0 0 0 0)
+    # 判断生成类型
+    case $1 in
+
+    bw)
+        echo "create bwMAX"
+
+        for ((i=0;i<${#ioway[*]};i++))
+        do
+        echo ${rpname[*]}
+        # 定义数据来源文件
+        rp=${fileList[${i}]}
+            for ((j=0;j<${#block[*]};j++))
+            do
+                for ((k=0;k<${#rwway[*]};k++))
+                do
+                    # 测试项
+                    rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
+                    num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "(" -f2 | cut -d ")" -f1`
+                    # 单位
+                    echo ${num:0-4}
+                    # 数值
+                    echo ${num:0:0-4}
+
+                    if [ $(echo "max[${k}] < ${num:0:0-4}"|bc) = 1 ]
+                    then
+                        max[${k}]=${num:0:0-4}
+                        l=${k}+${#rwway[*]}
+                        echo ${l}
+                        #max[${k}+${#rwway[*]}]=${rname}
+                    fi
+                done
+            done
+        done
+        # 定义max文件
+        maxBwFile=${path}${op}-max-${date}
+        echo ${maxBwFile}
+        echo ${max}
+        echo ${max} >> ${maxBwFile}
+        
+        ;;
+    iops)
+        echo iops
+        ;;
+    *)
+        echo "error! no this type"
+        exit 0
+        ;;
+    esac
 }
 
 
@@ -219,15 +442,45 @@ else
     echo "error! please enter filename!"
     exit 0
 fi
+#参数3设定执行方式
 
+case $3 in 
+1)
+    echo "**all test**"
+    getTestList
+    createFile
+    fioTest
+    allReportCreate
+    barBuild bw
+    barBuild iops
+    tableCreate
+    getMax bw
+    ;;
+2)
+    echo "**only Bar**"
+    getTestList
+    createFile    
+    barBuild bw
+    barBuild iops
+    ;;
+3)
+    echo "**only Max**"
+    getTestList
+    createFile
+    getMax bw
+    ;;
+4)
+    echo "**only Fio**"
+    getTestList
+    createFile
+    fioTest
+    ;;
+*)
+    echo "error!no this type!"
+    exit 0
+    ;;
+esac
 
-getTestList
-createFile
-fioTest
-allReportCreate
-barBuild bw
-#barBuild iops
-#reportCreate
 
 
 echo "fi"
