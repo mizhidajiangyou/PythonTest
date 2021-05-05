@@ -1,0 +1,43 @@
+{
+  "uid" : "83edc06c07f9ae9e47eb6dd1b683e4e2",
+  "name" : "packages",
+  "children" : [ {
+    "name" : "TestCase_Pytest",
+    "children" : [ {
+      "name" : "test_000_test",
+      "children" : [ {
+        "name" : "test_login",
+        "uid" : "7be85106aa790bda",
+        "parentUid" : "efc17ad87f79c1d79091bda24baed2f7",
+        "status" : "failed",
+        "time" : {
+          "start" : 1620201560694,
+          "stop" : 1620201560695,
+          "duration" : 1
+        },
+        "flaky" : false,
+        "newFailed" : false,
+        "parameters" : [ ]
+      } ],
+      "uid" : "efc17ad87f79c1d79091bda24baed2f7"
+    }, {
+      "name" : "test_001_test",
+      "children" : [ {
+        "name" : "test_login",
+        "uid" : "eedc99f0a8ab105a",
+        "parentUid" : "683cca86c0f35f6e829ad8c63e48ca4f",
+        "status" : "passed",
+        "time" : {
+          "start" : 1620201560756,
+          "stop" : 1620201560756,
+          "duration" : 0
+        },
+        "flaky" : false,
+        "newFailed" : false,
+        "parameters" : [ ]
+      } ],
+      "uid" : "683cca86c0f35f6e829ad8c63e48ca4f"
+    } ],
+    "uid" : "0f7bfa2ede8ad90369e5d36e50c76107"
+  } ]
+}

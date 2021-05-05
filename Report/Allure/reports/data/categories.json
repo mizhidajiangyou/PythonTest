@@ -1,0 +1,26 @@
+{
+  "uid" : "4b4757e66a1912dae1a509f688f20b0f",
+  "name" : "categories",
+  "children" : [ {
+    "name" : "Product defects",
+    "children" : [ {
+      "name" : "AssertionError: assert '4cpnue2v0ja16ryu@76.116' == True\n +  where '4cpnue2v0ja16ryu@76.116' = createRandomEmail()",
+      "children" : [ {
+        "name" : "test_login",
+        "uid" : "7be85106aa790bda",
+        "parentUid" : "e1513e0d77926dccda06097c4a0cbbba",
+        "status" : "failed",
+        "time" : {
+          "start" : 1620201560694,
+          "stop" : 1620201560695,
+          "duration" : 1
+        },
+        "flaky" : false,
+        "newFailed" : false,
+        "parameters" : [ ]
+      } ],
+      "uid" : "e1513e0d77926dccda06097c4a0cbbba"
+    } ],
+    "uid" : "8fb3a91ba5aaf9de24cc8a92edc82b5d"
+  } ]
+}

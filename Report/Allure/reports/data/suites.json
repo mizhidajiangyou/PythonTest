@@ -1,0 +1,43 @@
+{
+  "uid" : "98d3104e051c652961429bf95fa0b5d6",
+  "name" : "suites",
+  "children" : [ {
+    "name" : "TestCase_Pytest",
+    "children" : [ {
+      "name" : "test_000_test",
+      "children" : [ {
+        "name" : "test_login",
+        "uid" : "7be85106aa790bda",
+        "parentUid" : "554c7ded63c9d411611bfe48659faf18",
+        "status" : "failed",
+        "time" : {
+          "start" : 1620201560694,
+          "stop" : 1620201560695,
+          "duration" : 1
+        },
+        "flaky" : false,
+        "newFailed" : false,
+        "parameters" : [ ]
+      } ],
+      "uid" : "554c7ded63c9d411611bfe48659faf18"
+    }, {
+      "name" : "test_001_test",
+      "children" : [ {
+        "name" : "test_login",
+        "uid" : "eedc99f0a8ab105a",
+        "parentUid" : "9006b780eb73cebcc4eb3c2b32ccaf9a",
+        "status" : "passed",
+        "time" : {
+          "start" : 1620201560756,
+          "stop" : 1620201560756,
+          "duration" : 0
+        },
+        "flaky" : false,
+        "newFailed" : false,
+        "parameters" : [ ]
+      } ],
+      "uid" : "9006b780eb73cebcc4eb3c2b32ccaf9a"
+    } ],
+    "uid" : "82a7d69bc9ef7d59907de0ea0a98dbdd"
+  } ]
+}

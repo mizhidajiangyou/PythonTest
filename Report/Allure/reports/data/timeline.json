@@ -1,0 +1,39 @@
+{
+  "uid" : "ab17fc5a4eb3bca4b216b548c7f9fcbc",
+  "name" : "timeline",
+  "children" : [ {
+    "name" : "DESKTOP-DA9AGC9",
+    "children" : [ {
+      "name" : "24836-MainThread",
+      "children" : [ {
+        "name" : "test_login",
+        "uid" : "eedc99f0a8ab105a",
+        "parentUid" : "7a306128f06b2e2b0cbfdda54e47e87a",
+        "status" : "passed",
+        "time" : {
+          "start" : 1620201560756,
+          "stop" : 1620201560756,
+          "duration" : 0
+        },
+        "flaky" : false,
+        "newFailed" : false,
+        "parameters" : [ ]
+      }, {
+        "name" : "test_login",
+        "uid" : "7be85106aa790bda",
+        "parentUid" : "7a306128f06b2e2b0cbfdda54e47e87a",
+        "status" : "failed",
+        "time" : {
+          "start" : 1620201560694,
+          "stop" : 1620201560695,
+          "duration" : 1
+        },
+        "flaky" : false,
+        "newFailed" : false,
+        "parameters" : [ ]
+      } ],
+      "uid" : "7a306128f06b2e2b0cbfdda54e47e87a"
+    } ],
+    "uid" : "6d1cff8c69650db0214aefeac15b60da"
+  } ]
+}
