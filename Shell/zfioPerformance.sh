@@ -366,7 +366,7 @@ getMax(){
 
         for ((i=0;i<${#ioway[*]};i++))
         do
-        echo ${rpname[*]}
+        # echo ${rpname[*]}
         # 定义数据来源文件
         rp=${fileList[${i}]}
             for ((j=0;j<${#block[*]};j++))
@@ -380,15 +380,17 @@ getMax(){
                     # echo ${num:0-4}
                     # 数值
                     # echo ${num:0:0-4}
-                    #if [ $(echo "max[${k}] < ${num:0:0-4}"|bc) = 1 ]
-                    if [ ${num:0:0-4} -gt ${max[${k}]} ]
+                    # if [ $(echo "max[${k}] < ${num:0:0-4}"|bc) = 1 ]
+                    # 格式化num
+                    num=`awk -v x=1 -v y="${num:0:0-4}" 'BEGIN{printf "%d",x*y}'`
+                    if [ ${num} -gt ${max[${k}]} ]
                     then
-                        echo "============"${max[${k}]}
-                        max[${k}]=${num:0:0-4}
+                        # echo "============"${max[${k}]}
+                        max[${k}]=${num}
                         # l=$((${k}+${#rwway[*]}))
                         # echo ${l}
                         max[$((${k}+${#rwway[*]}))]=${rname}
-                        echo "-------------"${max[*]}
+                        # echo "-------------"${max[*]}
                     fi
                 done
             done
@@ -405,7 +407,7 @@ getMax(){
         echo "create iopsMAX"
         for ((i=0;i<${#ioway[*]};i++))
         do
-        echo ${rpname[*]}
+        # echo ${rpname[*]}
         # 定义数据来源文件
         rp=${fileList[${i}]}
             for ((j=0;j<${#block[*]};j++))
@@ -416,8 +418,8 @@ getMax(){
                     rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
                     num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
                     # 数值
-                    echo ${num}
-                    echo ${num:0-1}
+                    # echo ${num}
+                    # echo ${num:0-1}
                     # 如果最后一位为k则*1000
                     if [ "${num:0-1}" == "k" ];then
                     num=`awk -v x=1000 -v y="${num:0:0-1}" 'BEGIN{printf "%d",x*y}'`
@@ -425,12 +427,12 @@ getMax(){
                     fi
                     if [ ${num} -gt ${max[${k}]} ]
                     then
-                        echo "============"${max[${k}]}
+                        # echo "============"${max[${k}]}
                         max[${k}]=${num}
                         # l=$((${k}+${#rwway[*]}))
                         # echo ${l}
                         max[$((${k}+${#rwway[*]}))]=${rname}
-                        echo "-------------"${max[*]}
+                        # echo "-------------"${max[*]}
                     fi
                 done
             done

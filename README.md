@@ -34,6 +34,7 @@ if parent_path not in sys.path:
 * ~~图表生成~~
 * ~~$3支持选择执行步骤~~
 * ~~最大值生成~~
+* bw、iops判断大小的优化
 
 
 
