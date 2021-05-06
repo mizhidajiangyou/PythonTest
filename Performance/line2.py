@@ -6,15 +6,15 @@ plt.rc('font', family='SimHei', size=12)
 x1 = ['随机写', '随机读', '写', '读']
 
 # 数值
-y1 = [514,809,514,773]
-y2 = [460,784,467,816]
+y1 = [15500,43400,66400,83000]
+y2 = [14100,50300,65000,79200]
 # y3 = [1640.8, 4809.5, 787.6, 2736.5]
 
 # 设置画布大小
 # plt.figure(figsize=(16, 4))
 
 # 标题
-plt.title("NFS最大带宽")
+plt.title("NFS最大IOPS")
 
 # 数据
 plt.plot(x1, y1, label='AFA', linewidth=3, color='r', marker='o',
@@ -27,7 +27,7 @@ plt.plot(x1, y2, label='TRIM-AFA', linewidth=3, color='lime', marker='*',
 plt.xlabel('读写方式')
 
 # 纵坐标描述
-plt.ylabel('MB/s')
+plt.ylabel('IOPS')
 
 # 设置数字标签
 for a, b in zip(x1, y1):

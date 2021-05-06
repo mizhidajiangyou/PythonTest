@@ -1,0 +1,5 @@
+2021-05-04 21:09:39,506 - myLog.py[line:67] - DEBUG: debug test
+2021-05-04 21:09:39,507 - myLog.py[line:68] - INFO: info test
+2021-05-04 21:09:39,507 - myLog.py[line:69] - WARNING: warning test
+2021-05-04 21:09:39,507 - myLog.py[line:70] - ERROR: error test
+2021-05-04 21:09:39,507 - myLog.py[line:71] - CRITICAL: critical test

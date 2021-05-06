@@ -1,0 +1,41 @@
+{
+  "3c2233e195ecd676ab7900494412576e" : {
+    "statistic" : {
+      "failed" : 0,
+      "broken" : 0,
+      "skipped" : 0,
+      "passed" : 1,
+      "unknown" : 0,
+      "total" : 1
+    },
+    "items" : [ {
+      "uid" : "eedc99f0a8ab105a",
+      "status" : "passed",
+      "time" : {
+        "start" : 1620201560756,
+        "stop" : 1620201560756,
+        "duration" : 0
+      }
+    } ]
+  },
+  "3c5a24146fbb36903e83f074c345f0b6" : {
+    "statistic" : {
+      "failed" : 1,
+      "broken" : 0,
+      "skipped" : 0,
+      "passed" : 0,
+      "unknown" : 0,
+      "total" : 1
+    },
+    "items" : [ {
+      "uid" : "7be85106aa790bda",
+      "status" : "failed",
+      "statusDetails" : "AssertionError: assert '4cpnue2v0ja16ryu@76.116' == True\n +  where '4cpnue2v0ja16ryu@76.116' = createRandomEmail()",
+      "time" : {
+        "start" : 1620201560694,
+        "stop" : 1620201560695,
+        "duration" : 1
+      }
+    } ]
+  }
+}

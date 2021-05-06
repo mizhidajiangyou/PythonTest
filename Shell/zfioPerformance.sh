@@ -172,7 +172,7 @@ barBuild(){
         # 替换
         for ((i=0;i<${#ioway[*]};i++))
         do
-        echo ${rpname[*]}
+        # echo ${rpname[*]}
         # 定义数据来源文件
         rp=${fileList[${i}]}
         echo "from:"${rp}"building png"        
@@ -182,7 +182,7 @@ barBuild(){
             sed -i "s!miaoshu!MB/s!g" bar.py
             # 替换标题
             barTitle=${ioway[${i}]}-${block[${j}]}-$1
-            echo ${barTitle}
+            echo "now is ${barTitle}"
             sed -i "s/test-title/${barTitle}/" bar.py            
             #替换具体参数
             
@@ -260,7 +260,6 @@ barBuild(){
                 #echo $2                
                 #echo ${rname}
                 num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
-                
 
                 # 替换x轴标注
                 sed -i "s!mmm${k}!${num}!g" bar.py
@@ -367,7 +366,7 @@ getMax(){
 
         for ((i=0;i<${#ioway[*]};i++))
         do
-        echo ${rpname[*]}
+        # echo ${rpname[*]}
         # 定义数据来源文件
         rp=${fileList[${i}]}
             for ((j=0;j<${#block[*]};j++))
@@ -378,29 +377,70 @@ getMax(){
                     rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
                     num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "(" -f2 | cut -d ")" -f1`
                     # 单位
-                    echo ${num:0-4}
+                    # echo ${num:0-4}
                     # 数值
-                    echo ${num:0:0-4}
-
-                    if [ $(echo "max[${k}] < ${num:0:0-4}"|bc) = 1 ]
+                    # echo ${num:0:0-4}
+                    # if [ $(echo "max[${k}] < ${num:0:0-4}"|bc) = 1 ]
+                    # 格式化num
+                    num=`awk -v x=1 -v y="${num:0:0-4}" 'BEGIN{printf "%d",x*y}'`
+                    if [ ${num} -gt ${max[${k}]} ]
                     then
-                        max[${k}]=${num:0:0-4}
-                        l=${k}+${#rwway[*]}
-                        echo ${l}
-                        #max[${k}+${#rwway[*]}]=${rname}
+                        # echo "============"${max[${k}]}
+                        max[${k}]=${num}
+                        # l=$((${k}+${#rwway[*]}))
+                        # echo ${l}
+                        max[$((${k}+${#rwway[*]}))]=${rname}
+                        # echo "-------------"${max[*]}
                     fi
                 done
             done
         done
         # 定义max文件
         maxBwFile=${path}${op}-max-${date}
-        echo ${maxBwFile}
-        echo ${max}
-        echo ${max} >> ${maxBwFile}
+        # echo ${maxBwFile}
+        # echo ${max[*]}
+        echo "=========================================MaxBW=========================================" >> ${maxBwFile}
+        echo ${max[*]} >> ${maxBwFile}
         
         ;;
     iops)
-        echo iops
+        echo "create iopsMAX"
+        for ((i=0;i<${#ioway[*]};i++))
+        do
+        # echo ${rpname[*]}
+        # 定义数据来源文件
+        rp=${fileList[${i}]}
+            for ((j=0;j<${#block[*]};j++))
+            do
+                for ((k=0;k<${#rwway[*]};k++))
+                do
+                    # 测试项
+                    rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
+                    num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
+                    # 数值
+                    # echo ${num}
+                    # echo ${num:0-1}
+                    # 如果最后一位为k则*1000
+                    if [ "${num:0-1}" == "k" ];then
+                    num=`awk -v x=1000 -v y="${num:0:0-1}" 'BEGIN{printf "%d",x*y}'`
+                    # echo ${num}
+                    fi
+                    if [ ${num} -gt ${max[${k}]} ]
+                    then
+                        # echo "============"${max[${k}]}
+                        max[${k}]=${num}
+                        # l=$((${k}+${#rwway[*]}))
+                        # echo ${l}
+                        max[$((${k}+${#rwway[*]}))]=${rname}
+                        # echo "-------------"${max[*]}
+                    fi
+                done
+            done
+        done
+        # 定义max文件
+        maxBwFile=${path}${op}-max-${date}
+        echo "=========================================MaxIOPS=========================================" >> ${maxBwFile}
+        echo ${max[*]} >> ${maxBwFile}
         ;;
     *)
         echo "error! no this type"
@@ -468,6 +508,7 @@ case $3 in
     getTestList
     createFile
     getMax bw
+    getMax iops
     ;;
 4)
     echo "**only Fio**"
@@ -475,12 +516,25 @@ case $3 in
     createFile
     fioTest
     ;;
+5)
+    echo "**only Table**"
+    getTestList
+    createFile
+    tableCreate
+    ;;
+6)
+    echo "**only All**"
+    getTestList
+    createFile
+    allReportCreate
+    ;;    
 *)
     echo "error!no this type!"
+    echo "enter: 1--**all test** 2--**only Bar** 3--**only Max** 4--**only Fio** 5--**only Table** 6--**only All**"
     exit 0
     ;;
 esac
 
 
 
-echo "fi"
+echo "successful"
