@@ -34,8 +34,8 @@ def createRandomString(length):
 	slcChar = slcLetter + slcNumber
 	random.shuffle(slcChar)
 	# 格式化输出
-	RandomString = ''.join([i for i in slcChar])
-	return  RandomString
+	randomString = ''.join([i for i in slcChar])
+	return  randomString
 
 def createRandomEmail():
 	return createRandomString(random.randint(1, 32)) + "@" + createRandomString(random.randint(1, 4)) + "." + createRandomString(random.randint(1, 4))
