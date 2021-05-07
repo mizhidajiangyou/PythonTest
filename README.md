@@ -1,6 +1,6 @@
 # 自动化测试
 
-[磁盘性能测试](##磁盘性能测试)
+[磁盘性能测试](#磁盘性能测试)
 
 
 ## 依赖
@@ -9,6 +9,8 @@ pip install matplotlib
 pip install pytest
 
 pip install allure-pytest
+
+pip3 install -i https://pypi.douban.com/simple/ locustio==0.14.6
 
 
 ## 环境
