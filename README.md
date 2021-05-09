@@ -32,9 +32,21 @@ if parent_path not in sys.path:
 ### 模块构成
 Performance、Shell、Report
 
-### 核心文件
+### 核心模块
 
-#### zfioPerformance.sh
+#### 图片生成模块
+Performance/bar.py
+Performance/makelines.py
+
+##### 柱状图
+
+##### 折线图
+
+
+#### 测试模块
+Shell/zfioPerformance.sh
+
+##### 功能及参数说明
 
 ##### 已知缺陷
 * ~~iops/带宽值小于4的情况下无法生成barfix 21-0428）~~
