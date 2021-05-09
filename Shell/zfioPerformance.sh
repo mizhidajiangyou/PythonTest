@@ -495,6 +495,7 @@ case $3 in
     barBuild iops
     tableCreate
     getMax bw
+    getMax iops
     ;;
 2)
     echo "**only Bar**"

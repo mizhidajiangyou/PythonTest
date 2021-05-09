@@ -6,6 +6,8 @@ def judgeOS(function, bak):
 		print("os error!")
 	except IOError:
 		print("io error!")
+	except FileNotFoundError:
+		print("file not found!")
 	except Exception:
 		print("Exception!")
 
