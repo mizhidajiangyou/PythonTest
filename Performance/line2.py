@@ -39,5 +39,6 @@ for a, b in zip(x1, y2):
 #for a, b in zip(x1, y3):
 #	plt.text(a, b, b, ha='center', va='bottom', fontsize=10)
 
-plt.legend()
-plt.show()
+#plt.legend()
+#plt.show()
+plt.savefig('../Report/DiskPerformance/Charts/' + "test")

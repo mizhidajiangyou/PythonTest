@@ -12,9 +12,10 @@ def readFileAndMakeList(path):
 	print("已生成数组 : ", list)
 	# 关闭打开的文件
 	file.close()
-	return  list
+	return list
+
 
 if __name__ == "__main__":
-
-	path = '../Report/DiskPerformance/HFA-FC-test1.txt'
+	path = '../Report/DiskPerformance/Outputs/HFA-FC-test1.txt'
 	list = readFileAndMakeList(path)
+	# print(len(list[1])/2)
