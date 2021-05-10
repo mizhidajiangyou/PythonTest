@@ -22,6 +22,9 @@ Firefox：https://github.com/mozilla/geckodriver/releases
 `parent_path = os.path.dirname(sys.path[0]) 
 if parent_path not in sys.path:
     sys.path.append(parent_path)`
+
+### log支持中文
+修改FileHandler => def __init__(self, filename, mode='a', encoding='utf-8', delay=False)
     
 ### 使用pytest
 左上角file->Setting->Tools->Python Integrated Tools->项目名称->Default test runner->选择py.test
