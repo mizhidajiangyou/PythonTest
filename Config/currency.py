@@ -1,2 +1,5 @@
-from Common.createRandom import *
-import pytest
+
+# 脚本内重试次数定义
+retryCount=10
+
+

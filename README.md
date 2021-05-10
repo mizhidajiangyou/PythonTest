@@ -10,8 +10,11 @@ pip install pytest
 
 pip install allure-pytest
 
-pip3 install -i https://pypi.douban.com/simple/ locustio==0.14.6
+git clone https://github.com/locustio/locust.git && python setup.py install(1.5版本使用注意事项https://docs.locust.io/en/latest/quickstart.html)
 
+pip install Selenium
+Chrome：https://chromedriver.storage.googleapis.com/index.html?path=91.0.4472.19/
+Firefox：https://github.com/mozilla/geckodriver/releases
 
 ## 环境
 
@@ -19,6 +22,9 @@ pip3 install -i https://pypi.douban.com/simple/ locustio==0.14.6
 `parent_path = os.path.dirname(sys.path[0]) 
 if parent_path not in sys.path:
     sys.path.append(parent_path)`
+
+### log支持中文
+修改FileHandler => def __init__(self, filename, mode='a', encoding='utf-8', delay=False)
     
 ### 使用pytest
 左上角file->Setting->Tools->Python Integrated Tools->项目名称->Default test runner->选择py.test
@@ -42,6 +48,8 @@ Performance/makelines.py
 
 ##### 折线图
 
+###### 待优化
+num数组生成方式
 
 #### 测试模块
 Shell/zfioPerformance.sh
