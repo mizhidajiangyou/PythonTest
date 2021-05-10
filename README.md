@@ -10,8 +10,11 @@ pip install pytest
 
 pip install allure-pytest
 
-pip3 install -i https://pypi.douban.com/simple/ locustio==0.14.6
+git clone https://github.com/locustio/locust.git && python setup.py install(1.5版本使用注意事项https://docs.locust.io/en/latest/quickstart.html)
 
+pip install Selenium
+Chrome：https://chromedriver.storage.googleapis.com/index.html?path=91.0.4472.19/
+Firefox：https://github.com/mozilla/geckodriver/releases
 
 ## 环境
 
@@ -42,6 +45,8 @@ Performance/makelines.py
 
 ##### 折线图
 
+###### 待优化
+num数组生成方式
 
 #### 测试模块
 Shell/zfioPerformance.sh
