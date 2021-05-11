@@ -1,7 +1,4 @@
-
-
-from Config.currency import *
-
+from Common.createRandom import createRandomEmail
 
 
 def test_login():

@@ -14,3 +14,5 @@ if __name__=='__main__':
 	dr = openWebdriverMax()
 	dr.get("https://www.baidu.com/")
 	dr.close()
+
+

@@ -4,6 +4,11 @@ import random
 import string
 
 def createRandomString(length):
+	"""
+	:Usage: 生成随机字符串
+	:param length: int 生成字符串长度
+	:return: 随机字符串
+	"""
 	# 生成随机数字个数
 	num = random.randint(1, length)
 	# 定义字母个数
@@ -38,6 +43,10 @@ def createRandomString(length):
 	return  randomString
 
 def createRandomEmail():
+	"""
+	:Usage: 生成随机邮箱
+	:return:
+	"""
 	return createRandomString(random.randint(1, 32)) + "@" + createRandomString(random.randint(1, 4)) + "." + createRandomString(random.randint(1, 4))
 
 if __name__=='__main__':

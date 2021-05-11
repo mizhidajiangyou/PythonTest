@@ -2,8 +2,7 @@
 测试用例：
 	用户登录
 '''
-
-from Config.currency import *
+from Common.createRandom import createRandomEmail
 
 
 # 用户登录
