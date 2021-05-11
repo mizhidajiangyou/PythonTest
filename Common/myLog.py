@@ -29,7 +29,7 @@ class zLog:
 		# 日志输出位置
 		self.path = '../Report/MyLogs/' + self.zTime + '.log'
 		# 日志等级
-		self.logger.setLevel(logging.DEBUG)
+		self.logger.setLevel(logging.INFO)
 		'''
 		StreamHandler: 
 			能够将日志信息输出到sys.stdout, sys.stderr 或者类文件对象（更确切点，就是能够支持write()和flush()方法的对象）。
@@ -49,7 +49,7 @@ class zLog:
 		'''
 		# 日志文件输出
 		log1 = logging.FileHandler(self.path, mode='a')
-		log1.setLevel(logging.DEBUG)
+		log1.setLevel(logging.INFO)
 		# 控制台输出
 		log2 = logging.StreamHandler()
 		log2.setLevel(logging.INFO)

@@ -1,14 +1,15 @@
-from Common.myLog import zLog
-from Config.currency import retryCount
-from Common.timeOperate import returnDayTime
+from Config.currency import retryCount,currencylog
+from Common.timeOperate import *
 from Common.openDriver import openWebdriverMax
 from time import sleep
-# 实例化log模块
-judgelog = zLog()
 
-def judgeOS(function, bak):
+# 实例化log模块
+judgelog = currencylog
+
+
+def judgeOS(func, bak):
 	try:
-		function
+		func
 		judgelog.logger.info(bak + " successful!")
 	except OSError:
 		judgelog.logger.info("os error!")
@@ -19,30 +20,27 @@ def judgeOS(function, bak):
 	except Exception:
 		judgelog.logger.info("Exception!")
 
-def findByCSS(cssPath, message, dr):
-	# 定义重试次数
-	pd = retryCount
-	while pd > 0:
-		try:
-			div = dr.find_elements_by_css_selector(cssPath)
-			if div != []:
-				judgelog.logger.info("已找到：" + message)
-				pd = 0
-			else:
-				if pd == 1:
-					judgelog.logger.error("尝试超过" + retryCount + "次，失败！")
-					pd = 0
-				else:
-					pd -= 1
-					surplus = 10 - pd
-					errorPng = '../Report/UI/ErrorPng/' + returnDayTime() + '.png'
-					dr.get_screenshot_as_file(errorPng)
-					judgelog.logger.warning("寻找" + message + "  已尝试" + str(surplus) + "次，错误图片存放位置：" + errorPng)
-					sleep(5)
-		except:
-			judgelog.logger.error("error")
-			pd -= 1
 
+def judgeFindWay(path, way, dr):
+	"""
+	:Usage:
+		判断寻找element的方式并返回查询结果，若查不到则返回控数组
+	:param path: str 具体路径
+	:param way: str css/xpath/id（三种查询方式）
+	:param dr: driver
+	:return:  查询结果
+	"""
+	# 定义返回初始值
+	ele = []
+	if way == "css":
+		ele = dr.find_element_by_css_selector(path)
+	elif way == "xpath":
+		ele = dr.find_element_by_xpath(path)
+	elif way == "id":
+		ele = dr.find_element_by_id(path)
+	else:
+		judgelog.logger.error("error way for find elements")
+	return ele
 
 
 
@@ -54,5 +52,6 @@ if __name__ == '__main__':
 	dr = openWebdriverMax()
 	# judgeOS(testa(), "输出aaa")
 	dr.get("https://www.baidu.com/")
-	findByCSS("span>input#su", "提交按钮", dr)
+	#findElement("span>input#su", "提交按钮", "css", dr)
+	#findElementAndClick("span>input#su", "提交按钮", "css", dr)
 	dr.close()
