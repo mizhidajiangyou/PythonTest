@@ -6,7 +6,7 @@ retryCount=3
 # 定义脚本sleep时间
 timeSleep=5
 
-# 通用日志模块
+# 通用日志模块实例化
 currencylog = zLog()
 
 # 达到最大尝试次数提示语
