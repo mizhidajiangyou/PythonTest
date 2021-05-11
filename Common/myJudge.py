@@ -33,11 +33,11 @@ def judgeFindWay(path, way, dr):
 	# 定义返回初始值
 	ele = []
 	if way == "css":
-		ele = dr.find_elements_by_css_selector(path)
+		ele = dr.find_element_by_css_selector(path)
 	elif way == "xpath":
-		ele = dr.find_element_by_xpath()
+		ele = dr.find_element_by_xpath(path)
 	elif way == "id":
-		ele = dr.find_element_by_id()
+		ele = dr.find_element_by_id(path)
 	else:
 		judgelog.logger.error("error way for find elements")
 	return ele

@@ -51,8 +51,9 @@ def findElement(path, message, way, dr):
 					retryMessage(message, "寻找", surplus, dr)
 					sleep(timeSleep)
 		except:
-			pd = 0
-			elementLog.logger.error("error")
+			pd -= 1
+			surplus = retryCount - pd
+			retryMessage(message, "寻找", surplus, dr)
 			return False
 
 
@@ -124,6 +125,12 @@ if __name__ == '__main__':
 	dr = openWebdriverMax()
 	# judgeOS(testa(), "输出aaa")
 	dr.get("https://www.baidu.com/")
-	clearAndSend("span>input#kw", "搜索框","自动化测试", "css", dr)
+	# a= dr.find_element_by_id("kw")
+	# a.send_keys('selenium')
+	clearAndSend("span>input#kw", "搜索框", "自动化测试", "css", dr)
 	findElementAndClick("span>input#su", "提交按钮", "css", dr)
 	dr.close()
+
+
+
+
