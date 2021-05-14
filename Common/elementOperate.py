@@ -1,6 +1,6 @@
-from Config.currency import retryCount, currencylog, ErrorMax,timeSleep
+from Config.currency import retryCount, currencylog, ErrorMax,timeSleep, TESTPATH
 from Common.timeOperate import returnDayTimePng
-from Common.openDriver import openWebdriverMax
+from Common.openDriver import openWebdriverMax,openWebdriverNoUI
 from Common.myJudge import judgeFindWay
 from time import sleep
 from Common.myLog import zLog
@@ -119,18 +119,47 @@ def clearAndSend(path, message,sedmessage, way, dr):
 	pass
 
 
-if __name__ == '__main__':
-	# def testa():
-	# 	print("aaaaa")
-	dr = openWebdriverMax()
-	# judgeOS(testa(), "输出aaa")
-	dr.get("https://www.baidu.com/")
-	# a= dr.find_element_by_id("kw")
-	# a.send_keys('selenium')
-	clearAndSend("span>input#kw", "搜索框", "自动化测试", "css", dr)
-	findElementAndClick("span>input#su", "提交按钮", "css", dr)
-	dr.close()
+def returnHTMLFullScreenCapture(htmlPath, filePath):
+	"""
+		返回全屏截图
+	:param htmlPath: 必须使用系统绝对路径
+	:param filePath: 生成文件路径
+	:return:
+	"""
+	try:
+		dr = openWebdriverNoUI()
+		dr.get("file:" + htmlPath)
+		sleep(1)
+		# 接下来是全屏的关键，用js获取页面的宽高，如果有其他需要用js的部分也可以用这个方法
+		width = dr.execute_script("return document.documentElement.scrollWidth")
+		height = dr.execute_script("return document.documentElement.scrollHeight")
+		print(width, height)
+		# 将浏览器的宽高设置成刚刚获取的宽高
+		dr.set_window_size(width, height)
+		sleep(1)
+		# 截图并关掉浏览器
+		print(filePath)
+		dr.save_screenshot(filePath)
+		dr.close()
+	except:
+		elementLog.logger.error("error!")
 
+
+if __name__ == '__main__':
+
+	# # def testa():
+	# # 	print("aaaaa")
+	# dr = openWebdriverMax()
+	# # judgeOS(testa(), "输出aaa")
+	# dr.get("https://www.baidu.com/")
+	# # a= dr.find_element_by_id("kw")
+	# # a.send_keys('selenium')
+	# clearAndSend("span>input#kw", "搜索框", "自动化测试", "css", dr)
+	# findElementAndClick("span>input#su", "提交按钮", "css", dr)
+	# dr.close()
+
+
+	returnHTMLFullScreenCapture(TESTPATH + "\Report\DiskPerformance\Report\\2021-05-14\index.html\\",   TESTPATH + "\Report\DiskPerformance\Report\\2021-05-14\\all.png")
 
 
 

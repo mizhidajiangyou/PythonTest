@@ -11,18 +11,22 @@
 
 
 ## 依赖
-pip install matplotlib
+`pip install matplotlib`
 
-pip install pytest
+`pip install pytest`
 
-pip install allure-pytest
+`pip install allure-pytest`
 
-git clone https://github.com/locustio/locust.git && python setup.py install(1.5版本使用注意事项https://docs.locust.io/en/latest/quickstart.html)
+`git clone https://github.com/locustio/locust.git && python setup.py install`
 
-pip install Selenium
+1.5版本使用注意事项: https://docs.locust.io/en/latest/quickstart.html
+
+`pip install Selenium`
 
 Chrome：https://chromedriver.storage.googleapis.com/index.html?path=91.0.4472.19/
 Firefox：https://github.com/mozilla/geckodriver/releases
+
+`pip install PIL numpy`
 
 ## 环境
 
