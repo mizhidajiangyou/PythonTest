@@ -7,21 +7,25 @@
 
 [接口性能自动化测试](#接口性能自动化测试)
 
-[磁盘性能自动化测试](#磁盘性能测试)
+[磁盘性能自动化测试](#磁盘性能自动化测试)
 
 
 ## 依赖
-pip install matplotlib
+`pip install matplotlib`
 
-pip install pytest
+`pip install pytest`
 
-pip install allure-pytest
+`pip install allure-pytest`
 
-git clone https://github.com/locustio/locust.git && python setup.py install(1.5版本使用注意事项https://docs.locust.io/en/latest/quickstart.html)
+`git clone https://github.com/locustio/locust.git && python setup.py install`
 
-pip install Selenium
+1.5版本使用注意事项: https://docs.locust.io/en/latest/quickstart.html
+
+`pip install Selenium`
+
 Chrome：https://chromedriver.storage.googleapis.com/index.html?path=91.0.4472.19/
 Firefox：https://github.com/mozilla/geckodriver/releases
+
 
 ## 环境
 
@@ -57,6 +61,7 @@ elementOperate.py
 * 提供css_selector、xpath、id三种方法搜索元素
 * 封装元素click、sendkeys、clear等操作
 * 提供异常情况下截图并存放UI/ErrorPng
+* 提供全屏截图功能
 
 ### 已知缺陷
 
@@ -75,9 +80,16 @@ elementOperate.py
 ## 磁盘性能自动化测试 
 
 ### 模块构成
-Performance、Shell、Report/DiskPerformance
+Performance、Shell、Report/DiskPerformance、Common
 
 ### 核心模块
+
+#### 报告生成模块
+Common/fileOperate.py
+
+##### 功能说明
+* 根据地址、本次测试数据，生成HTML、JS、CSS
+* 全屏截图生成的HTML，保存文件即为测试报告
 
 #### 图片生成模块
 Performance/bar.py

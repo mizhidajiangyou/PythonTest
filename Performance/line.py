@@ -6,20 +6,20 @@ plt.rc('font', family='SimHei', size=12)
 x1 = ['随机写', '随机读', '写', '读']
 
 # 数值
-y1 = [514,809,514,773]
-y2 = [460,784,467,816]
+y1 = [719,1628,967,1631]
+y2 = [761,1629,1124,1629]
 # y3 = [1640.8, 4809.5, 787.6, 2736.5]
 
 # 设置画布大小
 # plt.figure(figsize=(16, 4))
 
 # 标题
-plt.title("NFS最大带宽")
+plt.title("FC最大带宽")
 
 # 数据
-plt.plot(x1, y1, label='AFA', linewidth=3, color='r', marker='o',
+plt.plot(x1, y1, label='1.7GHz', linewidth=3, color='r', marker='o',
 		 markerfacecolor='blue', markersize=6)
-plt.plot(x1, y2, label='TRIM-AFA', linewidth=3, color='lime', marker='*',
+plt.plot(x1, y2, label='2.6GHz', linewidth=3, color='lime', marker='*',
 		 markerfacecolor='peru', markersize=10)
 #plt.plot(x1, y3, label='ashift=12', linewidth=3, color='mediumpurple', marker='X',markerfacecolor='lightyellow', markersize=10)
 
