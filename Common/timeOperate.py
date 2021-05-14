@@ -26,9 +26,27 @@ def returnDayTimePng(path,dr):
 	:return:
 	"""
 	dateFile = path + returnYearMounthDay()
-	if not os.path.exists(dateFile):  # 判断是否存在文件夹如果不存在则创建为文件夹
-		os.makedirs(dateFile)
-	Png = dateFile + '/' + returnTime() + '.png'
-	dr.get_screenshot_as_file(Png)
-	return Png
+	try:
+		if not os.path.exists(dateFile):  # 判断是否存在文件夹如果不存在则创建为文件夹
+			os.makedirs(dateFile)
+		Png = dateFile + '/' + returnTime() + '.png'
+		dr.get_screenshot_as_file(Png)
+		return Png
+	except:
+		print("error!")
+		return "error!"
 
+
+def returnYearMounthDayFile(path):
+	"""
+		在path路径下生成一个年月日的文件，成功则返回路径名
+	:param path:
+	:return:
+	"""
+	dateFile = path + returnYearMounthDay()
+	try:
+		if not os.path.exists(dateFile):  # 判断是否存在文件夹如果不存在则创建为文件夹
+			os.makedirs(dateFile)
+		return dateFile
+	except:
+		return False

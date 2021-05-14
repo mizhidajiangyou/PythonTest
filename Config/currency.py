@@ -1,4 +1,8 @@
 from Common.myLog import zLog
+from os import path
+
+# 脚本路径
+TESTPATH=path.abspath('..')
 
 # 脚本内重试次数定义
 retryCount=3
