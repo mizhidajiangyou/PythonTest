@@ -43,6 +43,14 @@ def readFileAndMakeString(path):
 
 
 def makeHtmlRport(orPath,html,js,css):
+	"""
+		在orPath路径下生成当日日期文件并在该文件中生成html、css、js
+	:param orPath: 可写相对路径../；绝对路径TESTPATH + "\XXX\XXX\\"
+	:param html: HTML文件内容
+	:param js: js文件内容
+	:param css: css文件内容
+	:return:
+	"""
 	# 在存放路径下生成日期文件，将存放html、js、css等文件
 	rePath = returnYearMounthDayFile(orPath)
 	# 判断是否成功
@@ -55,21 +63,26 @@ def makeHtmlRport(orPath,html,js,css):
 	htmlPath = rePath + "/index.html"
 	jsPath = rePath + "/main.js"
 	cssPath = rePath + "/all.css"
+	try:
+		# 打开文件
+		fileHTML = open(htmlPath, 'w', encoding='utf8')
+		fileCSS = open(cssPath, 'w', encoding='utf8')
+		fileJS = open(jsPath, 'w', encoding='utf8')
 
-	# 打开文件
-	fileHTML = open(htmlPath, 'w', encoding='utf8')
-	fileCSS = open(cssPath, 'w', encoding='utf8')
-	fileJS = open(jsPath, 'w', encoding='utf8')
+		# 写入数据
+		fileHTML.write(html)
+		fileJS.write(js)
+		fileCSS.write(css)
 
-	# 写入数据
-	fileHTML.write(html)
-	fileJS.write(js)
-	fileCSS.write(css)
-
-	# 关闭文件
-	fileHTML.close()
-	fileCSS.close()
-	fileJS.close()
+		# 关闭文件
+		fileHTML.close()
+		fileCSS.close()
+		fileJS.close()
+		fileLog.logger.info("make html in :" + orPath + " successful!")
+		return True
+	except:
+		fileLog.logger.error("make html in :" + orPath + " failed!")
+		return False
 
 
 
