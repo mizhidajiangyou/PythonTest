@@ -8,7 +8,6 @@ from Common.myLog import zLog
 # 实例化log模块
 elementLog = currencylog
 
-
 def retryMessage(message, way, surplus, dr):
 	"""
 	回复重试的信息

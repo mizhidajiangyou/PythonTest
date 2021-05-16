@@ -8,7 +8,7 @@ fileLog = currencylog
 def readFileAndMakeList(path):
 	try:
 		# 打开一个文件
-		file = open(path, "r")
+		file = open(path, "r", encoding='utf-8')
 		# 定义一个数组
 		list = []
 		# 读取每一行的内容
@@ -28,7 +28,7 @@ def readFileAndMakeList(path):
 def readFileAndMakeString(path):
 	try:
 		# 打开一个文件
-		file = open(path, "r")
+		file = open(path, "r", encoding='utf-8')
 		# 定义一个数组
 		list = ""
 		# 读取每一行的内容
@@ -39,6 +39,7 @@ def readFileAndMakeString(path):
 		file.close()
 		return list
 	except:
+		fileLog.logger.error("转换文件： "+ path + " 失败")
 		return False
 
 
@@ -90,5 +91,8 @@ if __name__ == "__main__":
 	# path = '../Report/DiskPerformance/Outputs/HFA-FC-test1.txt'
 	# list = readFileAndMakeList(path)
 
-	orPath = TESTPATH + "\Report\DiskPerformance\Report\\"
-	makeHtmlRport(orPath,"aa","bb","cc")
+	# orPath = TESTPATH + "\Report\DiskPerformance\Report\\"
+	# makeHtmlRport(orPath,"aa","bb","cc")
+
+	a = readFileAndMakeString("../Demo/DiskPerformanceReport/mainDemo.js")
+	print(a)
