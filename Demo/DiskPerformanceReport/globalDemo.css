@@ -8,3 +8,7 @@
   user-select: none;
   overflow-x: auto;
 }
+
+.demonstration{
+  font-size: large !important;
+}
