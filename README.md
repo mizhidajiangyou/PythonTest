@@ -23,6 +23,11 @@
 
 `pip install Selenium`
 
+Vue3.0 :`<script src="https://unpkg.com/vue@next"></script>`
+ElementPlus:`<link rel="stylesheet" href="https://unpkg.com/element-plus/lib/theme-chalk/index.css">`
+`<script src="https://unpkg.com/element-plus/lib/index.full.js"></script>`
+* 可通过Tools/Web/downloadUnpkg.py文件将依赖下载至本地（默认将下载最新版本[-1]，默认存放Tools/Web路径（./））
+
 Chrome：https://chromedriver.storage.googleapis.com/index.html?path=91.0.4472.19/
 Firefox：https://github.com/mozilla/geckodriver/releases
 
