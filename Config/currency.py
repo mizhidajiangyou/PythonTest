@@ -1,8 +1,15 @@
 from Common.myLog import zLog
 from os import path
+from Common.timeOperate import returnYearMounthDay
 
 # 脚本路径
 TESTPATH=path.abspath('..')
+
+# 磁盘性能测试报告路径
+PERFORMANCEPATH=TESTPATH + "\Report\DiskPerformance\Report\\"
+
+# 当日磁盘测试报告路径
+PERFORMANCEREPORT=PERFORMANCEPATH + returnYearMounthDay() + "\\"
 
 # 脚本内重试次数定义
 retryCount=3
