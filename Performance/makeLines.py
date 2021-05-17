@@ -8,6 +8,7 @@ import numpy as np
 # 定义path（后续优化）
 path = ["../Report/DiskPerformance/Outputs/HFA-FC-test1.txt","../Report/DiskPerformance/Outputs/HFA-iSCSI-test1.txt"]
 pathname = ["HFA-FC","HFA-iSCSI"]
+# 定义线的颜色
 style=['r','o','blue','lime','*','peru']
 # 获取数据
 list = []
@@ -39,8 +40,8 @@ def pltset(index):
 		plt.plot(x, num[i+index], label=pathname[i], linewidth=3, color=style[i*3], marker=style[i*3+1], markerfacecolor=style[i*3+2], markersize=6)
 		for a, b in zip(x, num[i+index]):
 			plt.text(a, b, b, ha='center', va='bottom', fontsize=10)
-	plt.legend()
-	plt.show()
+	# plt.legend()
+	# plt.show()
 
 
 

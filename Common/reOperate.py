@@ -16,7 +16,8 @@ def reSub(rExpression,rString, orString):
 	try:
 		findString = re.search(rExpression, orString).group()
 		fiString = re.sub(rExpression,rString,orString)
-		reLog.logger.info("已将字符串：" + orString + "中的" + findString + "替换为：" + rString)
+		reLog.logger.debug("已将字符串：" + orString + "中的" + findString + "替换为：" + rString)
+		reLog.logger.info("替换字符串成功")
 		return  fiString
 	except:
 		reLog.logger.error("替换字符串失败！")
