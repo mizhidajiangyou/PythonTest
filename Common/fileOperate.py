@@ -6,6 +6,11 @@ from Common.timeOperate import returnYearMounthDayFile
 fileLog = currencylog
 
 def readFileAndMakeList(path):
+	"""
+		根据文件内容，生成数组，每一行为数组中的一组数组元素
+	:param path:
+	:return:
+	"""
 	try:
 		# 打开一个文件
 		file = open(path, "r", encoding='utf-8')
@@ -17,7 +22,8 @@ def readFileAndMakeList(path):
 		for i in range(0, len(str)):
 			list.append(str[i].strip().split())
 
-		fileLog.logger.info("已生成数组 : " +  list)
+		fileLog.logger.info("成功生成数组！")
+		fileLog.logger.debug(list)
 		# 关闭打开的文件
 		file.close()
 		return list
@@ -34,7 +40,8 @@ def readFileAndMakeString(path):
 		# 读取每一行的内容
 		str = file.readlines()
 		list = list.join(str)
-		fileLog.logger.info("已生成字符串 : " + list)
+		fileLog.logger.debug("已生成字符串 : " + list)
+		fileLog.logger.info("生成字符串成功！")
 		# 关闭打开的文件
 		file.close()
 		return list
@@ -61,9 +68,9 @@ def makeHtmlRport(orPath,html,js,css):
 		fileLog.logger.error("make file error!")
 
 	# html、js、css等文件路径
-	htmlPath = rePath + "/index.html"
-	jsPath = rePath + "/main.js"
-	cssPath = rePath + "/all.css"
+	htmlPath = rePath + "/indexDemo.html"
+	jsPath = rePath + "/mainDemo.js"
+	cssPath = rePath + "/globalDemo.css"
 	try:
 		# 打开文件
 		fileHTML = open(htmlPath, 'w', encoding='utf8')
