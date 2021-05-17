@@ -17,7 +17,8 @@ def readFileAndMakeList(path):
 		for i in range(0, len(str)):
 			list.append(str[i].strip().split())
 
-		fileLog.logger.info("已生成数组 : " +  list)
+		fileLog.logger.info("成功生成数组！")
+		fileLog.logger.debug(list)
 		# 关闭打开的文件
 		file.close()
 		return list
