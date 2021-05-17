@@ -105,8 +105,7 @@ Performance/makelines.py
 ##### 柱状图
 
 ##### 折线图
-根据生成的max文件，生成折线图效果如下：
-
+根据生成的max文件
 
 #### 测试模块
 Shell/zfioPerformance.sh
@@ -119,6 +118,7 @@ Shell/zfioPerformance.sh
 * 没有转换KB/s为MB/s
 * ~~特殊数值导致bar脚本无法复原（fix 21-0429）~~
 * ~~iops带k情况下最大值取不到的问题（fix 21-0505）~~
+* 根据文件生成折线图IOPS图存在取值错误
 
 ### 待优化
 * Linux环境下支持中文

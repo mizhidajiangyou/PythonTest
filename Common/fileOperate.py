@@ -6,6 +6,11 @@ from Common.timeOperate import returnYearMounthDayFile
 fileLog = currencylog
 
 def readFileAndMakeList(path):
+	"""
+		根据文件内容，生成数组，每一行为数组中的一组数组元素
+	:param path:
+	:return:
+	"""
 	try:
 		# 打开一个文件
 		file = open(path, "r", encoding='utf-8')
