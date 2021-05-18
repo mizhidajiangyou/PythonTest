@@ -28,20 +28,20 @@
         <h2>服务端信息</h2>
         <div class="hardwareDescriptions">
             <el-descriptions title="硬件信息" direction="vertical" :column="4" border>
-                <el-descriptions-item label="磁盘">Intel SSD DC P4610 7.68TB * 24</el-descriptions-item>
-                <el-descriptions-item label="处理器">AMD Ryzen ThreadRipper 3990X @ 2.90GHz</el-descriptions-item>
-                <el-descriptions-item label="内存" :span="2">256GB</el-descriptions-item>
-                <el-descriptions-item label="光纤卡">XILINX Kintex7 AV7K325</el-descriptions-item>
-                <el-descriptions-item label="阵列卡">INSPUR SAS3008I</el-descriptions-item>
-                <el-descriptions-item label="万兆卡">intel X710</el-descriptions-item>
+                <el-descriptions-item label="磁盘">{{serverInfo.disk}}</el-descriptions-item>
+                <el-descriptions-item label="处理器">{{serverInfo.cpu}}</el-descriptions-item>
+                <el-descriptions-item label="内存" :span="2">{{serverInfo.memory}}</el-descriptions-item>
+                <el-descriptions-item label="光纤卡">{{serverInfo.QLogic}}</el-descriptions-item>
+                <el-descriptions-item label="阵列卡">{{serverInfo.LSI}}</el-descriptions-item>
+                <el-descriptions-item label="万兆卡">{{serverInfo.Ethernet}}</el-descriptions-item>
             </el-descriptions>
         </div>
         <div class="version">
             <el-descriptions title="版本信息" direction="vertical" :column="4" border>
-                <el-descriptions-item label="架构">ARM64</el-descriptions-item>
-                <el-descriptions-item label="阶段">Gold1</el-descriptions-item>
-                <el-descriptions-item label="版本">6.1.5</el-descriptions-item>
-                <el-descriptions-item label="构建号">20210231</el-descriptions-item>
+                <el-descriptions-item label="架构">{{serverVersion.framework}}</el-descriptions-item>
+                <el-descriptions-item label="阶段">{{serverVersion.stage}}</el-descriptions-item>
+                <el-descriptions-item label="版本">{{serverVersion.version}}</el-descriptions-item>
+                <el-descriptions-item label="构建号">{{serverVersion.Component}}</el-descriptions-item>
             </el-descriptions>
         </div>
     </div>
@@ -127,10 +127,11 @@
     <el-divider style="height: 2px"></el-divider>
     <div class="twoTitle">
         <h2>测试报告（详细报告见附件）</h2>
-        <h3>FC卷异步、同步读写测试</h3>
-        <div class="demo-image__placeholder">
+        <div class="testItems"  v-for="(i,index) in testItems" :key="i">
+            <h3>{{testItems[index]}}</h3>
+            <div class="demo-image__placeholder">
             <div class="block" style="height: 300px ; width: 100%">
-                <el-image :src="FCsrc">
+                <el-image :src="testResultPic[index]">
                     <template #placeholder>
                         <div class="image-slot">
                             加载中<span class="dot">...</span>
@@ -139,29 +140,6 @@
                 </el-image>
             </div>
         </div>
-        <h3>ISCSI卷异步、同步读写测试</h3>
-        <div class="demo-image__placeholder">
-            <div class="block" style="height: 300px ; width: 100%">
-                <el-image :src="FCsrc">
-                    <template #placeholder>
-                        <div class="image-slot">
-                            加载中<span class="dot">...</span>
-                        </div>
-                    </template>
-                </el-image>
-            </div>
-        </div>
-        <h3>NFS卷异步、同步读写测试</h3>
-        <div class="demo-image__placeholder">
-            <div class="block" style="height: 300px ; width: 100%">
-                <el-image :src="FCsrc">
-                    <template #placeholder>
-                        <div class="image-slot">
-                            加载中<span class="dot">...</span>
-                        </div>
-                    </template>
-                </el-image>
-            </div>
         </div>
     </div>
     <el-divider style="height: 2px"></el-divider>
