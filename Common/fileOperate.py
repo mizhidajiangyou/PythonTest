@@ -115,7 +115,7 @@ def copyFile(filePath,newPath):
 			newDir = filePath +  file
 			# 如果是文件
 			if os.path.isfile(newDir):
-				print(newDir)
+				# print(newDir)
 				newFile = newPath + file
 				shutil.copyfile(newDir, newFile)
 			# 如果不是文件，递归这个文件夹的路径

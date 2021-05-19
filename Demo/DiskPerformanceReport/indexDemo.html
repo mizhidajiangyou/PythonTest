@@ -123,9 +123,10 @@
         <h2>测试报告（详细报告见附件）</h2>
         <div class="testItems" v-for="(i,index) in testItems" :key="i">
             <h3>{{testItems[index]}}</h3>
+            <div class="testPics" v-for="(j,index) in testResultPic[index]" :key="j">
             <div class="demo-image__placeholder">
                 <div class="block" style="height: 300px ; width: 100%">
-                    <el-image :src="testResultPic[index]">
+                    <el-image :src="j">
                         <template #placeholder>
                             <div class="image-slot">
                                 加载中<span class="dot">...</span>
