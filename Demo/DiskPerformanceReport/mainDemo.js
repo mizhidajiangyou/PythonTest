@@ -6,7 +6,7 @@ const App = {
             // 服务端硬件信息
             serverInfo:{disk: 'Intel SSD DC P4610 7.68TB * 24', cpu : 'AMD Ryzen ThreadRipper 3990X @ 2.90GHz',memory: '256GB',QLogic: 'XILINX Kintex7 AV7K325', LSI:'INSPUR SAS3008I', Ethernet:'intel X710'},
             // 服务端版本及架构
-            serverVersion:{framework:"ARM64",Gold1:'Gold1',version:'6.1.5',Component:'20210231'},
+            serverVersion:{framework:"ARM64",stage:'Gold1',version:'6.1.5',Component:'20210231'},
             // 测试项
             testItems:["FC卷异步、同步读写测试","ISCSI卷异步、同步读写测试","NFS卷异步、同步读写测试"],
             // 结果图

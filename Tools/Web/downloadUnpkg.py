@@ -4,7 +4,7 @@
 import requests, re, os, time, shutil
 
 url = "https://unpkg.com/"
-mod = "element-plus"
+mod = "browse/vue"
 version = ""
 headers = {'Accept-Language': 'zh-CN,zh;q=0.8',
 		   'Content-Type': 'text/html;Charset=utf-8',
