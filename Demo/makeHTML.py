@@ -31,6 +31,6 @@ if __name__ == "__main__":
 	for i in range(0,len(jsSrtingDate)):
 		js = reSub(jsRegularExpression[i], jsSrtingDate[i], js)
 	# print(js)
-	#reSub(totalTableData,)
+	# reSub(totalTableData,)
 	# makeHtmlRport(orPath,html,js,css)
 

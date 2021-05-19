@@ -1,9 +1,12 @@
-from Config.currency import currencylog,TESTPATH
+from Config.currency import currencylog, TESTPATH, PERFORMANCEREPORT
 from Common.timeOperate import returnYearMounthDayFile
-
+import os
+import shutil
+import sys
 
 # 实例化log模块
 fileLog = currencylog
+
 
 def readFileAndMakeList(path):
 	"""
@@ -46,11 +49,11 @@ def readFileAndMakeString(path):
 		file.close()
 		return list
 	except:
-		fileLog.logger.error("转换文件： "+ path + " 失败")
+		fileLog.logger.error("转换文件： " + path + " 失败")
 		return False
 
 
-def makeHtmlRport(orPath,html,js,css):
+def makeHtmlRport(orPath, html, js, css):
 	"""
 		在orPath路径下生成当日日期文件并在该文件中生成html、css、js
 	:param orPath: 可写相对路径../；绝对路径TESTPATH + "\XXX\XXX\\"
@@ -92,6 +95,37 @@ def makeHtmlRport(orPath,html,js,css):
 		fileLog.logger.error("make html in :" + orPath + " failed!")
 		return False
 
+def createDir(path):
+    isExists=os.path.exists(path)
+    # 判断结果
+    if not isExists:
+        # 如果不存在则创建目录
+        os.makedirs(path)
+        fileLog.logger.debug(path+' 目录创建成功')
+    else:
+        # 如果目录存在则不创建，并提示目录已存在
+        fileLog.logger.debug(path+' 目录已存在')
+
+def copyFile(filePath,newPath):
+	try :
+		# 获取当前路径下的文件名，返回List
+		fileNames = os.listdir(filePath)
+		for file in fileNames:
+			# 将文件命加入到当前文件路径后面
+			newDir = filePath +  file
+			# 如果是文件
+			if os.path.isfile(newDir):
+				print(newDir)
+				newFile = newPath + file
+				shutil.copyfile(newDir, newFile)
+			# 如果不是文件，递归这个文件夹的路径
+			else:
+				copyFile(newDir, newPath)
+		fileLog.logger.debug("复制" +filePath +"下的文件至"+newPath+"成功！" )
+		fileLog.logger.info("复制成功！")
+	except:
+		fileLog.logger.error("error!")
+
 
 
 if __name__ == "__main__":
@@ -101,5 +135,9 @@ if __name__ == "__main__":
 	# orPath = TESTPATH + "\Report\DiskPerformance\Report\\"
 	# makeHtmlRport(orPath,"aa","bb","cc")
 
-	a = readFileAndMakeString("../Demo/DiskPerformanceReport/mainDemo.js")
-	print(a)
+	# a = readFileAndMakeString("../Demo/DiskPerformanceReport/mainDemo.js")
+	# print(a)
+
+	souPath = TESTPATH + "\Demo\DiskPerformanceReport\\"
+	desPath = PERFORMANCEREPORT
+	copyFile(souPath, desPath)

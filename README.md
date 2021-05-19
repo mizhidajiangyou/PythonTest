@@ -30,6 +30,8 @@ ElementPlus:`<link rel="stylesheet" href="https://unpkg.com/element-plus/lib/the
 Chrome：https://chromedriver.storage.googleapis.com/index.html?path=91.0.4472.19/
 Firefox：https://github.com/mozilla/geckodriver/releases
 
+`pip install pytest-shutil`
+
 
 ## 环境
 
