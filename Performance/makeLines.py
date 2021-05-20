@@ -2,14 +2,15 @@
 import matplotlib.pyplot as plt
 import datetime
 from Common.fileOperate import readFileAndMakeList
+from Common.createRandom import createLineStyle
 import numpy as np
 
 
 # 定义path（后续优化）
-path = ["../Report/DiskPerformance/Outputs/HFA-FC-test1.txt","../Report/DiskPerformance/Outputs/HFA-iSCSI-test1.txt"]
-pathname = ["HFA-FC","HFA-iSCSI"]
+path = ["../Report/DiskPerformance/Outputs/HFA-FC-test1.txt","../Report/DiskPerformance/Outputs/HFA-iSCSI-test1.txt","../Report/DiskPerformance/Outputs/Test-NFS-max-test.txt"]
+pathname = ["HFA-FC","HFA-iSCSI","Test-NFS"]
 # 定义线的颜色
-style=['r','o','blue','lime','*','peru']
+style=createLineStyle(3)
 # 获取数据
 list = []
 for i in range(0, len(path)):
@@ -40,8 +41,8 @@ def pltset(index):
 		plt.plot(x, num[i+index], label=pathname[i], linewidth=3, color=style[i*3], marker=style[i*3+1], markerfacecolor=style[i*3+2], markersize=6)
 		for a, b in zip(x, num[i+index]):
 			plt.text(a, b, b, ha='center', va='bottom', fontsize=10)
-	# plt.legend()
-	# plt.show()
+	plt.legend()
+	plt.show()
 
 
 
@@ -57,7 +58,7 @@ while i < 2:
 		pltset(0)
 		chart = "linepng" + "-BW-" + datetime.datetime.now().strftime("%Y-%m-%d") + ".png"
 		# 生成PNG
-		plt.savefig('../Report/DiskPerformance/Charts/' + chart)
+		#plt.savefig('../Report/DiskPerformance/Charts/' + chart)
 	else:
 		plt.title("IOPS")
 		# 纵坐标描述
@@ -65,7 +66,7 @@ while i < 2:
 		pltset(1)
 		chart = "linepng" + "-IOPS-" + datetime.datetime.now().strftime("%Y-%m-%d") + ".png"
 		# 生成PNG
-		plt.savefig('../Report/DiskPerformance/Charts/' + chart)
+		#plt.savefig('../Report/DiskPerformance/Charts/' + chart)
 	i += 1
 	# print(i)
 
