@@ -12,6 +12,7 @@
 
 ## 依赖
 `pip install matplotlib`
+* linux解决SimHei问题：1、import matplotlib print(matplotlib.matplotlib_fname()) 获取路径；2、拷贝至mpl-data/fonts/ttf 3、删除缓存：rm ~/.cache/matplotlib -rf（注意：可能缓存地址不对，使用代码 fontmanager.get_cachedir() 或 fontmanager._fmcache获取缓存地址。） 4、plt.rcParams['font.sans-serif']=['SimHei']  
 
 `pip install pytest`
 
@@ -103,6 +104,8 @@ Common/fileOperate.py、reOperate.py
 #### 图片生成模块
 Performance/bar.py
 Performance/makelines.py
+效果：
+![Image text](https://)
 
 ##### 柱状图
 
@@ -120,7 +123,8 @@ Shell/zfioPerformance.sh
 * 没有转换KB/s为MB/s
 * ~~特殊数值导致bar脚本无法复原（fix 21-0429）~~
 * ~~iops带k情况下最大值取不到的问题（fix 21-0505）~~
-* 根据文件生成折线图IOPS图存在取值错误
+* ~~根据文件生成折线图IOPS图存在取值错误（fix 21-0520）~~
+*linux下无SimHei问题
 
 ### 待优化
 * Linux环境下支持中文
@@ -133,7 +137,7 @@ Shell/zfioPerformance.sh
 * 直接输出磁盘性能测试最终报告
 * 优化整体框架，搭建ubuntu测试磁盘性能web服务器（mongdb+Apache+react+python+shell），以实现动态的一键测试及报告产出
 * 折线图（makelines.py）中num数组生成方式
-* indexDemo.html中的数据来源
+* ~~indexDemo.html中的数据来源~~
 
 
 

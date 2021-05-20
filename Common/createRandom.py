@@ -61,11 +61,11 @@ def createLineStyle(length):
 	"""
 	style = []
 	# 线的颜色
-	color = ["#20f986", "#75bbfd", "#ef1de7", "f9bc08", "#FF0000", "#00FFFF'", "#FFF8DC", "#B8860B", "#A9A9A9",
+	color = ["#20f986", "#75bbfd", "#ef1de7",  "#FF0000", "#00FFFF", "#FFF8DC", "#B8860B", "#A9A9A9",
 			 "#696969", "#FF00FF", "#808080", "#FFFACD", "#D3D3D3", "#66CDAA", "#191970", "#6B8E23", "#AFEEEE",
 			 "#CD853F","#FFC0CB","#BC8F8F","#2E8B57","#FFFAFA","#008080","#40E0D0","#9ACD32"]
 	# 转折点颜色
-	markerfacecolor = ["#20f986", "#75bbfd", "#ef1de7", "f9bc08", "#FF0000", "#00FFFF'", "#FFF8DC", "#B8860B", "#A9A9A9",
+	markerfacecolor = ["#0000CD","#BA55D3","#9370DB","#800000", "#66CDAA",  "#FF0000", "#00FFFF", "#FFF8DC", "#B8860B", "#A9A9A9",
 			 "#696969", "#FF00FF", "#808080", "#FFFACD", "#D3D3D3", "#66CDAA", "#191970", "#6B8E23", "#AFEEEE",
 			 "#CD853F","#FFC0CB","#BC8F8F","#2E8B57","#FFFAFA","#008080","#40E0D0","#9ACD32"]
 	# 转折点
