@@ -105,7 +105,7 @@ Common/fileOperate.py、reOperate.py
 Performance/bar.py
 Performance/makelines.py
 效果：
-![Image text](https://)
+![Image text](https://github.com/mizhidajiangyou/myTest/blob/master/Report/DiskPerformance/Charts/linepng-IOPS-2021-05-20.png)
 
 ##### 柱状图
 
@@ -120,11 +120,11 @@ Shell/zfioPerformance.sh
 ### 已知缺陷
 * ~~iops/带宽值小于4的情况下无法生成barfix 21-0428）~~
 * ~~图片路径不能复原（fix 21-0428）~~
-* 没有转换KB/s为MB/s
+* ~~没有转换KB/s为MB/s(fix 21-0521)~~
 * ~~特殊数值导致bar脚本无法复原（fix 21-0429）~~
 * ~~iops带k情况下最大值取不到的问题（fix 21-0505）~~
 * ~~根据文件生成折线图IOPS图存在取值错误（fix 21-0520）~~
-*linux下无SimHei问题
+* ~~linux下无SimHei问题(fix 21-0521)~~
 
 ### 待优化
 * Linux环境下支持中文
