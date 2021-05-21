@@ -43,7 +43,7 @@ def pltset(index):
 		# print(i+index*len(path))
 		# print(num[i+index*len(path)])
 		plt.plot(x, num[i+index*len(path)], label=pathname[i], linewidth=3, color=style[i*3], marker=style[i*3+1], markerfacecolor=style[i*3+2], markersize=6)
-		for a, b in zip(x, num[i+index]):
+		for a, b in zip(x, num[i+index*len(path)]):
 			plt.text(a, b, b, ha='center', va='bottom', fontsize=10)
 		plt.legend(loc='upper right', frameon=False)
 	# plt.legend()
