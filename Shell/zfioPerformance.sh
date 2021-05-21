@@ -1,8 +1,18 @@
 #!/usr/bin/env bash
 # 必要参数设置
 # 设置报告路径op
-path="/home/output/"
-date=`date +%y%m%d`.txt
+# 获取当日时间
+day=`date +%y%m%d`
+# 报告目录
+output="../Report/DiskPerformance/Outputs/"
+# 生成文件夹
+mkdir -p ${output}${day}
+# 数据存放位置
+path=${output}${day}"/"
+# 带时间的报告文件设置date如下
+# date=`date +%y%m%d`.txt
+# 不带时间的报告文件设置date如下
+date="test.txt"
 # 测试项目
 block=(4k 1M 128k)
 ioway=(libaio sync)

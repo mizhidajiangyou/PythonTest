@@ -1,7 +1,8 @@
-import  datetime
+import datetime
 import json
 import random
 import string
+
 
 def createRandomString(length):
 	"""
@@ -40,16 +41,49 @@ def createRandomString(length):
 	random.shuffle(slcChar)
 	# 格式化输出
 	randomString = ''.join([i for i in slcChar])
-	return  randomString
+	return randomString
+
 
 def createRandomEmail():
 	"""
 	:Usage: 生成随机邮箱
 	:return:
 	"""
-	return createRandomString(random.randint(1, 32)) + "@" + createRandomString(random.randint(1, 4)) + "." + createRandomString(random.randint(1, 4))
+	return createRandomString(random.randint(1, 32)) + "@" + createRandomString(
+		random.randint(1, 4)) + "." + createRandomString(random.randint(1, 4))
 
-if __name__=='__main__':
 
-	print(createRandomString(32))
-	print(createRandomEmail())
+def createLineStyle(length):
+	"""
+		生成用于制作折线图的颜色
+	:param length:
+	:return:
+	"""
+	style = []
+	# 线的颜色
+	color = ["#20f986", "#75bbfd", "#ef1de7",  "#FF0000", "#00FFFF", "#FFF8DC", "#B8860B", "#A9A9A9",
+			 "#696969", "#FF00FF", "#808080", "#FFFACD", "#D3D3D3", "#66CDAA", "#191970", "#6B8E23", "#AFEEEE",
+			 "#CD853F","#FFC0CB","#BC8F8F","#2E8B57","#FFFAFA","#008080","#40E0D0","#9ACD32"]
+	# 转折点颜色
+	markerfacecolor = ["#0000CD","#BA55D3","#9370DB","#800000", "#66CDAA",  "#FF0000", "#00FFFF", "#FFF8DC", "#B8860B", "#A9A9A9",
+			 "#696969", "#FF00FF", "#808080", "#FFFACD", "#D3D3D3", "#66CDAA", "#191970", "#6B8E23", "#AFEEEE",
+			 "#CD853F","#FFC0CB","#BC8F8F","#2E8B57","#FFFAFA","#008080","#40E0D0","#9ACD32"]
+	# 转折点
+	marker = [".",",","o","v","1","2","*","X","x","d","D","|","h","H","+",">","<","^","p","P","s"]
+	styleColor=[random.choice(color) for i in range(length)]
+	styleMarkerFaceColor=[random.choice(markerfacecolor) for i in range(length)]
+	styleMarker=[random.choice(marker) for i in range(length)]
+
+	# 生成style
+	for i in range(0,length):
+		style.append(styleColor[i])
+		style.append(styleMarker[i])
+		style.append(styleMarkerFaceColor[i])
+
+	return style
+
+
+if __name__ == '__main__':
+	#print(createRandomString(32))
+	#print(createRandomEmail())
+	print(createLineStyle(3))

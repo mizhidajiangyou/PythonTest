@@ -28,20 +28,20 @@
         <h2>服务端信息</h2>
         <div class="hardwareDescriptions">
             <el-descriptions title="硬件信息" direction="vertical" :column="4" border>
-                <el-descriptions-item label="磁盘">Intel SSD DC P4610 7.68TB * 24</el-descriptions-item>
-                <el-descriptions-item label="处理器">AMD Ryzen ThreadRipper 3990X @ 2.90GHz</el-descriptions-item>
-                <el-descriptions-item label="内存" :span="2">256GB</el-descriptions-item>
-                <el-descriptions-item label="光纤卡">XILINX Kintex7 AV7K325</el-descriptions-item>
-                <el-descriptions-item label="阵列卡">INSPUR SAS3008I</el-descriptions-item>
-                <el-descriptions-item label="万兆卡">intel X710</el-descriptions-item>
+                <el-descriptions-item label="磁盘">{{serverInfo.disk}}</el-descriptions-item>
+                <el-descriptions-item label="处理器">{{serverInfo.cpu}}</el-descriptions-item>
+                <el-descriptions-item label="内存" :span="2">{{serverInfo.memory}}</el-descriptions-item>
+                <el-descriptions-item label="光纤卡">{{serverInfo.QLogic}}</el-descriptions-item>
+                <el-descriptions-item label="阵列卡">{{serverInfo.LSI}}</el-descriptions-item>
+                <el-descriptions-item label="万兆卡">{{serverInfo.Ethernet}}</el-descriptions-item>
             </el-descriptions>
         </div>
         <div class="version">
             <el-descriptions title="版本信息" direction="vertical" :column="4" border>
-                <el-descriptions-item label="架构">ARM64</el-descriptions-item>
-                <el-descriptions-item label="阶段">Gold1</el-descriptions-item>
-                <el-descriptions-item label="版本">6.1.5</el-descriptions-item>
-                <el-descriptions-item label="构建号">20210231</el-descriptions-item>
+                <el-descriptions-item label="架构">{{serverVersion.framework}}</el-descriptions-item>
+                <el-descriptions-item label="阶段">{{serverVersion.stage}}</el-descriptions-item>
+                <el-descriptions-item label="版本">{{serverVersion.version}}</el-descriptions-item>
+                <el-descriptions-item label="构建号">{{serverVersion.Component}}</el-descriptions-item>
             </el-descriptions>
         </div>
     </div>
@@ -99,77 +99,53 @@
     <div class="twoTitle">
         <h2>测试工具</h2>
         <h3>工具</h3>
-        <br>fio-3.16
+        <br>{{tool}}
+        <el-divider></el-divider>
         <h3>命令参数</h3>
-        <br> fio –filename/director= `盘符`/`挂载路径` -direct=1 -thread -size=100% -numjobs=64 -time_based -runtime=1800
-        -group_reporting -startdelay=30 -ioengine=libaio/sync -rw=read/write/randwrite/randread -bs=4k/128k/1M
-        -name=report
+        <br>{{toolParameter}}
     </div>
     <el-divider style="height: 2px"></el-divider>
     <div class="twoTitle">
         <h2>测试类型</h2>
-        <h3>FC卷异步、同步读写测试</h3>
-        <br>服务端A、B控各9块盘创建RAID5
-        <br>A、B控存储池分配4个fc卷给客户端A
-        <br>客户端测试异步（libaio）/同步(sync)，4k/128k/1m,顺序/随机,读/写
-        <br>每个测试项10086分钟
-        <h3>ISCSI卷异步、同步读写测试</h3>
-        <br>服务端A、B控各9块盘创建RAID5
-        <br>A、B控存储池分配4个iscsi卷给客户端A
-        <br>客户端测试异步（libaio）/同步(sync)，4k/128k/1m,顺序/随机,读/写
-        <br>每个测试项10086分钟
-        <h3>NFS卷异步、同步读写测试</h3>
-        <br>服务端A、B控各9块盘创建RAID5
-        <br>A、B控存储池分配4个nfs卷给客户端A
-        <br>客户端测试异步（libaio）/同步(sync)，4k/128k/1m,顺序/随机,读/写
-        <br>每个测试项10086分钟
+            <div class="testItems" v-for="(i,index) in testItems" :key="i">
+                <el-divider></el-divider>
+                <h3>{{i}}</h3>
+                <br>{{poolType}}
+                <br>{{volumeType}}
+                <br>{{testTime}}
+                <br>{{testWay}}
+
+            </div>
+
     </div>
     <el-divider style="height: 2px"></el-divider>
     <div class="twoTitle">
         <h2>测试报告（详细报告见附件）</h2>
-        <h3>FC卷异步、同步读写测试</h3>
-        <div class="demo-image__placeholder">
-            <div class="block" style="height: 300px ; width: 100%">
-                <el-image :src="FCsrc">
-                    <template #placeholder>
-                        <div class="image-slot">
-                            加载中<span class="dot">...</span>
-                        </div>
-                    </template>
-                </el-image>
+        <div class="testItems" v-for="(i,index) in testItems" :key="i">
+            <h3>{{testItems[index]}}</h3>
+            <div class="testPics" v-for="(j,index) in testResultPic[index]" :key="j">
+            <div class="demo-image__placeholder">
+                <div class="block" style="height: 300px ; width: 100%">
+                    <el-image :src="j">
+                        <template #placeholder>
+                            <div class="image-slot">
+                                加载中<span class="dot">...</span>
+                            </div>
+                        </template>
+                    </el-image>
+                </div>
             </div>
-        </div>
-        <h3>ISCSI卷异步、同步读写测试</h3>
-        <div class="demo-image__placeholder">
-            <div class="block" style="height: 300px ; width: 100%">
-                <el-image :src="FCsrc">
-                    <template #placeholder>
-                        <div class="image-slot">
-                            加载中<span class="dot">...</span>
-                        </div>
-                    </template>
-                </el-image>
-            </div>
-        </div>
-        <h3>NFS卷异步、同步读写测试</h3>
-        <div class="demo-image__placeholder">
-            <div class="block" style="height: 300px ; width: 100%">
-                <el-image :src="FCsrc">
-                    <template #placeholder>
-                        <div class="image-slot">
-                            加载中<span class="dot">...</span>
-                        </div>
-                    </template>
-                </el-image>
-            </div>
+            <el-divider></el-divider>
         </div>
     </div>
     <el-divider style="height: 2px"></el-divider>
     <div class="twoTitle">
         <h2>测试总结</h2>
-        <div class="demo-image__placeholder">
-            <div class="block" style="height: 300px ; width: 100%">
-                <el-image :src="FCsrc">
+        <div class="results" v-for="(i,index) in results" :key="i" >
+            <div>{{resultsTitle[index]}}</div>
+             <div class="demo-image__placeholder">
+                <div class="block" style="height: 300px ; width: 100%">
+                <el-image :src="i">
                     <template #placeholder>
                         <div class="image-slot">
                             加载中<span class="dot">...</span>
@@ -177,7 +153,10 @@
                     </template>
                 </el-image>
             </div>
+            </div>
+            <el-divider></el-divider>
         </div>
+
 
 
     </div>
