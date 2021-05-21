@@ -203,10 +203,11 @@ barBuild(){
                 # 单位
                 #echo ${num:0-4}
                 # 数值
-                #echo ${num:0:0-4}
-                #if ${num:0-4} -eq "kB/s";then
-                    #num=${num:0:0-4}/1024
-                #fi
+                 if [ ${num:0-4} == "kB/s" ]; then
+                    num=`echo "scale=1; ${num:0:0-4}/1024" | bc`
+                    num=${num}"MB/s"
+                 fi
+
                 
                 # 替换x轴标注
                 sed -i "s!mmm${k}!${num:0:0-4}!g" bar.py
@@ -391,6 +392,12 @@ getMax(){
                     # 数值
                     # echo ${num:0:0-4}
                     # if [ $(echo "max[${k}] < ${num:0:0-4}"|bc) = 1 ]
+                    if [ ${num:0-4} == "kB/s" ] ; then
+                        num=`echo "scale=1; ${num:0:0-4}/1024" | bc`
+                        num=${num}"MB/s"
+                    fi
+
+
                     # 格式化num
                     num=`awk -v x=1 -v y="${num:0:0-4}" 'BEGIN{printf "%d",x*y}'`
                     if [ ${num} -gt ${max[${k}]} ]
