@@ -1,4 +1,6 @@
 # 自动化测试
+疑问及建议可发送邮件至：670746945@qq.com 或直接添加
+
 [环境](#环境)
 
 [接口自动化测试](#接口自动化测试)
@@ -9,10 +11,13 @@
 
 [磁盘性能自动化测试](#磁盘性能自动化测试)
 
+[测试服务器](#测试服务器)
+
+[缺陷及优化](#缺陷及优化)
+
 
 ## 依赖
 `pip install matplotlib`
-* linux解决SimHei问题：1、import matplotlib print(matplotlib.matplotlib_fname()) 获取路径；2、拷贝至mpl-data/fonts/ttf 3、删除缓存：rm ~/.cache/matplotlib -rf（注意：可能缓存地址不对，使用代码 fontmanager.get_cachedir() 或 fontmanager._fmcache获取缓存地址。） 4、plt.rcParams['font.sans-serif']=['SimHei']  
 
 `pip install pytest`
 
@@ -33,6 +38,9 @@ Firefox：https://github.com/mozilla/geckodriver/releases
 
 `pip install pytest-shutil`
 
+`pip install pymongo`
+
+`pip install Django -i https://pypi.tuna.tsinghua.edu.cn/simple`
 
 ## 环境
 
@@ -50,6 +58,20 @@ if parent_path not in sys.path:
 ### 使用allure
 1. 下载：https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.13.9/
 2. path中添加
+
+### linux解决SimHei问题
+1、import matplotlib print(matplotlib.matplotlib_fname()) 获取路径；
+2、拷贝至mpl-data/fonts/ttf 
+3、删除缓存：rm ~/.cache/matplotlib -rf（注意：可能缓存地址不对，使用代码 fontmanager.get_cachedir() 或 fontmanager._fmcache获取缓存地址。） 
+4、plt.rcParams['font.sans-serif']=['SimHei']  
+
+### MongoDB
+MongoDB：https://www.mongodb.com/try/download/community 
+* linux：选择TGZ下载， 解压tar -zxvf mongodb-linux.tgz；改名为mongodb；;加入环境变量：export PATH=<mongodb-install-directory>/bin:$PATH；cd mongodb &&mkdir -p data/db；运行./mongod --port 27017 --dbpath=/data/mongodb/data/db --logpath=/data/mongodb/logs --fork;查看ps -ef
+* Windows：下载msi安装；在data目录下创建db、log
+
+### Django
+1、django-admin startproject MySite
 
 ## 接口自动化测试
 
@@ -105,7 +127,7 @@ Common/fileOperate.py、reOperate.py
 Performance/bar.py
 Performance/makelines.py
 效果：
-![Image text](https://github.com/mizhidajiangyou/myTest/blob/master/Report/DiskPerformance/Charts/linepng-IOPS-2021-05-20.png)
+![Image text](https://github.com/mizhidajiangyou/myTest/blob/master/Report/DiskPerformance/Charts/linepng-IOPS-2021-05-21.png)
 
 ##### 柱状图
 
@@ -116,6 +138,27 @@ Performance/makelines.py
 Shell/zfioPerformance.sh
 
 ##### 功能及参数说明
+
+
+## 测试服务器
+使用的linux系统为Ubuntu20.04
+
+### 搭建
+
+#### 一、Apache2部署
+
+* 安装apache2 `apt-get install apache2`
+
+* 启动服务 /etc/init.d/apache2 restart/start/stop && apache2ctl -k  restart/start/stop
+
+* 修改html根目录：/etc/apache2/sites-available/000-default.conf中的 DocumentRoot 对应的目录
+
+* 修改html文件对应：/etc/apache2/mods-available/dir.conf（可不做）
+
+#### 二、Django部署
+
+
+## 缺陷及优化
 
 ### 已知缺陷
 * ~~iops/带宽值小于4的情况下无法生成barfix 21-0428）~~
@@ -135,9 +178,15 @@ Shell/zfioPerformance.sh
 * bw、iops判断大小的优化
 * ~~根据最大值max文件生成折线图~~
 * 直接输出磁盘性能测试最终报告
-* 优化整体框架，搭建ubuntu测试磁盘性能web服务器（mongdb+Apache+react+python+shell），以实现动态的一键测试及报告产出
+* 优化整体框架，搭建ubuntu测试磁盘性能web服务器（mongdb+Apache2+vue+python+shell），以实现动态的一键测试及报告产出
 * 折线图（makelines.py）中num数组生成方式
 * ~~indexDemo.html中的数据来源~~
+
+
+
+
+
+
 
 
 
