@@ -127,10 +127,11 @@ Common/fileOperate.py、reOperate.py
 Performance/bar.py
 Performance/makelines.py
 效果：
-![Image text](https://github.com/mizhidajiangyou/myTest/blob/master/Report/DiskPerformance/2021-05-26/linepng-IOPS-2021-05-21.png)
+![Image text](https://github.com/mizhidajiangyou/myTest/blob/performance/Report/DiskPerformance/2021-05-26/linepng-IOPS-2021-05-21.png)
+
 Common/elementOperate.py
 效果：
-![Image text](https://github.com/mizhidajiangyou/myTest/blob/master/Report/DiskPerformance/2021-05-26/all.png).<img src="https://github.com/mizhidajiangyou/myTest/blob/master/Report/DiskPerformance/2021-05-26/all.png" width="300" height="450" />
+.<img src="https://github.com/mizhidajiangyou/myTest/blob/performance/Report/DiskPerformance/2021-05-26/all.png" width="300" height="450" />
 
 ##### 柱状图
 
