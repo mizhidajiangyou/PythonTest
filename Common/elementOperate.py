@@ -129,15 +129,15 @@ def returnHTMLFullScreenCapture(htmlPath, filePath):
 		dr = openWebdriverNoUI()
 		dr.get("file:" + htmlPath)
 		sleep(1)
-		# 接下来是全屏的关键，用js获取页面的宽高，如果有其他需要用js的部分也可以用这个方法
+		# 获取高和宽
 		width = dr.execute_script("return document.documentElement.scrollWidth")
 		height = dr.execute_script("return document.documentElement.scrollHeight")
-		print(width, height)
+		# print(width, height)
 		# 将浏览器的宽高设置成刚刚获取的宽高
 		dr.set_window_size(width, height)
 		sleep(1)
 		# 截图并关掉浏览器
-		print(filePath)
+		# print(filePath)
 		dr.save_screenshot(filePath)
 		dr.close()
 	except:
@@ -157,8 +157,7 @@ if __name__ == '__main__':
 	# findElementAndClick("span>input#su", "提交按钮", "css", dr)
 	# dr.close()
 
-
-	returnHTMLFullScreenCapture(TESTPATH + "\Report\DiskPerformance\Report\\2021-05-14\index.html\\",   TESTPATH + "\Report\DiskPerformance\Report\\2021-05-14\\all.png")
+	returnHTMLFullScreenCapture(TESTPATH + "\Report\DiskPerformance\Report\\2021-05-19\\indexDemo.html",   TESTPATH + "\Report\DiskPerformance\Report\\2021-05-19\\all.png")
 
 
 
