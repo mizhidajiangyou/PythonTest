@@ -145,7 +145,38 @@ Shell/zfioPerformance.sh
 
 ### 搭建
 
-#### 一、Apache2部署
+#### 一、ubuntu20.04系统部署
+* IP配置
+`vim /etc/netplan/xxxxx.yaml`
+
+添加：
+   network:
+  ethernets:
+    enp7s0f0:
+      addresses:
+      - 10.18.18.23/24
+      gateway4: 10.18.18.1
+      
+  version: 2
+ 
+ `netplan apply`
+
+* 源配置 
+`deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal main restricted universe multiverse`
+`deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-security main restricted universe multiverse`
+`deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-updates main restricted universe multiverse`
+`deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse`
+`deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-backports main restricted universe multiverse`
+
+* ssh启用
+一般只会安装客户端，所以需要安装服务端（）
+`sudo apt install openssh-server`
+
+-> LoginGraceTime 2m
+-> PermitRootLogin yes
+-> StrictModes yes
+
+#### 二、Apache2部署
 
 * 安装apache2 `apt-get install apache2`
 
@@ -155,7 +186,7 @@ Shell/zfioPerformance.sh
 
 * 修改html文件对应：/etc/apache2/mods-available/dir.conf（可不做）
 
-#### 二、Django部署
+#### 三、Django部署
 
 
 ## 缺陷及优化
@@ -181,6 +212,11 @@ Shell/zfioPerformance.sh
 * 优化整体框架，搭建ubuntu测试磁盘性能web服务器（mongdb+Apache2+vue+python+shell），以实现动态的一键测试及报告产出
 * 折线图（makelines.py）中num数组生成方式
 * ~~indexDemo.html中的数据来源~~
+* ~~fio中磁盘参数动态获取~~
+
+### 异常处理
+
+* 现象：
 
 
 
