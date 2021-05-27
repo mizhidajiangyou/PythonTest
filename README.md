@@ -40,6 +40,8 @@ Firefox：https://github.com/mozilla/geckodriver/releases
 
 `pip install pymongo`
 
+`pip install pymysql`
+
 `pip install Django -i https://pypi.tuna.tsinghua.edu.cn/simple`
 
 ## 环境
@@ -189,6 +191,25 @@ Shell/zfioPerformance.sh
 #### 三、Django部署
 
 * django-admin startproject MySite
+
+* 修改MySite/settings => TIME_ZONE = 'Asia/Shanghai';LANGUAGE_CODE = 'zh-hans'
+
+* 在init文件中追加 `import pymysql;pymysql.install_as_MySQLdb()`
+
+* mysql配置：grant all privileges on test1.* to 'django'@'localhost' identified by 'password';
+
+* settings配置文件修改：`DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'test1',
+        'USER': 'django',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}`
+
+* 
 
 
 
