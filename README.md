@@ -70,9 +70,6 @@ MongoDB：https://www.mongodb.com/try/download/community
 * linux：选择TGZ下载， 解压tar -zxvf mongodb-linux.tgz；改名为mongodb；;加入环境变量：export PATH=<mongodb-install-directory>/bin:$PATH；cd mongodb &&mkdir -p data/db；运行./mongod --port 27017 --dbpath=/data/mongodb/data/db --logpath=/data/mongodb/logs --fork;查看ps -ef
 * Windows：下载msi安装；在data目录下创建db、log
 
-### Django
-1、django-admin startproject MySite
-
 ## 接口自动化测试
 
 ## UI自动化测试
@@ -130,8 +127,7 @@ Performance/makelines.py
 ![Image text](https://github.com/mizhidajiangyou/myTest/blob/performance/Report/DiskPerformance/2021-05-26/linepng-IOPS-2021-05-21.png)
 
 Common/elementOperate.py
-效果：
-.<img src="https://github.com/mizhidajiangyou/myTest/blob/performance/Report/DiskPerformance/2021-05-26/all.png" width="300" height="450" />
+效果：<img src="https://github.com/mizhidajiangyou/myTest/blob/performance/Report/DiskPerformance/2021-05-26/all.png" width="100" height="200" />
 
 ##### 柱状图
 
@@ -191,6 +187,10 @@ Shell/zfioPerformance.sh
 * 修改html文件对应：/etc/apache2/mods-available/dir.conf（可不做）
 
 #### 三、Django部署
+
+* django-admin startproject MySite
+
+
 
 
 ## 缺陷及优化
