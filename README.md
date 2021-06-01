@@ -209,7 +209,7 @@ Shell/zfioPerformance.sh
     }
 }`
 
-* 
+* `python manage.py migrate`
 
 
 
