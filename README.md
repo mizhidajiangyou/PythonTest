@@ -192,7 +192,7 @@ Shell/zfioPerformance.sh
 
 * django-admin startproject MySite
 
-* 修改MySite/settings => TIME_ZONE = 'Asia/Shanghai';LANGUAGE_CODE = 'zh-hans'
+* 修改MySite/settings => TIME_ZONE = 'Asia/Shanghai';LANGUAGE_CODE = 'zh-hans' ;USE_TZ = False
 
 * 在init文件中追加 `import pymysql;pymysql.install_as_MySQLdb()`
 
@@ -209,7 +209,24 @@ Shell/zfioPerformance.sh
     }
 }`
 
-* `python manage.py migrate`
+* `python manage.py migrate` # 创建表结构
+
+*  ORM模型：app(django-admin startapp)>>models中配置：`类名<->表名` ; `实例<->记录` ;`属性<->字段` 追加`class Question(models.Model):
+    question_text = models.CharField(max_length=200)`
+
+* setting.py配置文件修改：`INSTALLED_APPS = [
+    'polls'
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]`
+
+* `python manage.py makemigrations` # 模型变更
+
+* `python manage.py migrate polls` # 根据模型创建表
 
 
 
