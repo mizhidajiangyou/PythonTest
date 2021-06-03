@@ -15,7 +15,7 @@ for i in ${DISK_LIST[*]}
             do
                 volume="v"${j}
                 echo "from pool:"${pool}" create volume:"${volume}
-                zfs create -b ${BLOCK_SIZE} -o logbias=latency -o redundant_metadata=most -o sync=always -o flexvisor:volsig=v0 -V ${VOLUME_SIZE} ${pool}/${volume}
+                zfs create -b ${BLOCK_SIZE} -o logbias=latency -o redundant_metadata=most -o sync=always -V ${VOLUME_SIZE} ${pool}/${volume}
             done
     done
 

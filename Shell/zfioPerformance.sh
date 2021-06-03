@@ -490,7 +490,8 @@ disk)
     # 判断参数4（磁盘名称）是否存在
     if [ x$4 != x ]
     then
-        runio="fio-disk.sh "$4
+        runio="fio-disk.sh"
+        sed -i "s!d=\"testDisk\"!d=$4!g" ${runio}
         # 生成文件夹
         mkdir -p ${output}${day}/$4
         # 重新定义数据存放位置
@@ -570,5 +571,6 @@ case $3 in
 esac
 
 
+cp fio-disk.sh.bak fio-disk.sh
 
 echo "successful"

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+d="testDisk"
 
 # 判断参数磁盘名称是否存在
 if [ x$1 != x ]
