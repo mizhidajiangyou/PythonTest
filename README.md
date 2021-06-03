@@ -47,6 +47,8 @@ Firefox：https://github.com/mozilla/geckodriver/releases
 
 `pip install pymongo`
 
+`pip install pymysql`
+
 `pip install Django -i https://pypi.tuna.tsinghua.edu.cn/simple`
 
 ## 环境
