@@ -3,6 +3,7 @@ from Common.timeOperate import returnYearMounthDayFile
 import os
 import shutil
 import sys
+from Config.currency import veryLongTime,longTime,mediumTime,shortTime,littleTime,instantaneous
 
 # 实例化log模块
 fileLog = currencylog
@@ -30,7 +31,10 @@ def readFileAndMakeList(path):
 		# 关闭打开的文件
 		file.close()
 		return list
-	except:
+	except FileNotFoundError:
+		fileLog.logger.error("file not found!")
+		return False
+	except :
 		return False
 
 
@@ -126,6 +130,39 @@ def copyFile(filePath,newPath):
 	except:
 		fileLog.logger.error("error!")
 
+def compareMD5(path):
+	try:
+		list=readFileAndMakeList(path)
+		if len(list) == 2:
+			if list[0] == list[1]:
+				fileLog.logger.info("md5值一致!")
+				fileLog.logger.debug("第一次的md5值为:"+ str(list[0]) +" 第二次的md5值为："+str(list[1]))
+			else:
+				fileLog.logger.error("md5值不一致")
+				fileLog.logger.debug("第一次的md5值为:" + str(list[0]) + " 第二次的md5值为：" + str(list[1]))
+		else:
+			fileLog.logger.error("校验文件md5数据不正确！")
+			fileLog.logger.info("文件内容为： ")
+			fileLog.logger.info(list)
+
+	except:
+		fileLog.logger.error("compareERROR!")
+
+
+def zSleep(zTime):
+    if zTime == "vl":
+        sleep(veryLongTime)
+    elif zTime == "l":
+        sleep(longTime)
+    elif zTime == "m":
+        sleep(mediumTime)
+    elif zTime == "s":
+        sleep(shortTime)
+    elif zTime == "i":
+        sleep(instantaneous)
+    else:
+        sleep(zTime)
+
 
 
 if __name__ == "__main__":
@@ -138,6 +175,9 @@ if __name__ == "__main__":
 	# a = readFileAndMakeString("../Demo/DiskPerformanceReport/mainDemo.js")
 	# print(a)
 
-	souPath = TESTPATH + "\Demo\DiskPerformanceReport\\"
-	desPath = PERFORMANCEREPORT
-	copyFile(souPath, desPath)
+	# souPath = TESTPATH + "\Demo\DiskPerformanceReport\\"
+	# desPath = PERFORMANCEREPORT
+	# copyFile(souPath, desPath)
+
+	path = TESTPATH +"\TestData\md5"
+	compareMD5(path)

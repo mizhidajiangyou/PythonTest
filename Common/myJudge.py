@@ -46,6 +46,9 @@ def judgeFindWay(path, way, dr):
 
 
 
+
+
+
 if __name__ == '__main__':
 	# def testa():
 	# 	print("aaaaa")
