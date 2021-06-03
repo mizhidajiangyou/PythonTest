@@ -484,6 +484,17 @@ nfs)
     echo "fio will run fio-nfs.sh"
     runio="fio-nfs.sh"
     ;;
+disk)
+    echo "fio will run fio-disk.sh"
+    # 判断参数4（磁盘名称）是否存在
+    if [ x$4 != x ]
+    then
+        runio="fio-disk.sh "$4
+    else
+        echo "error! please enter disk name in \$4 !"
+        exit 0
+    fi
+    ;;
 *)
     echo "error! please enter volume-type!(fc/iscsi/nfs)"
     exit 0
