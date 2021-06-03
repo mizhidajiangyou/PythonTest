@@ -167,7 +167,7 @@ Shell/zfioPerformance.sh
 `deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-updates main restricted universe multiverse`
 `deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse`
 `deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-backports main restricted universe multiverse`
-
+`https://mirror.tuna.tsinghua.edu.cn/help/ubuntu/`
 * ssh启用
 一般只会安装客户端，所以需要安装服务端（）
 `sudo apt install openssh-server`
