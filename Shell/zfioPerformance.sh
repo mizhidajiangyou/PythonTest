@@ -2,7 +2,8 @@
 # 必要参数设置
 # 设置报告路径op
 # 获取当日时间
-day=`date +%y%m%d`
+# day=`date +%y%m%d`
+day=`cat ../Performance/day.date | sed -n "1,1p"`
 # 报告目录
 output="../Report/DiskPerformance/Outputs/"
 # 生成文件夹
@@ -490,6 +491,10 @@ disk)
     if [ x$4 != x ]
     then
         runio="fio-disk.sh "$4
+        # 生成文件夹
+        mkdir -p ${output}${day}/$4
+        # 重新定义数据存放位置
+        path=${output}${day}"/"$4"/"
     else
         echo "error! please enter disk name in \$4 !"
         exit 0
