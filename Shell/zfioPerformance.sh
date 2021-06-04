@@ -2,7 +2,8 @@
 # 必要参数设置
 # 设置报告路径op
 # 获取当日时间
-day=`date +%y%m%d`
+# day=`date +%y%m%d`
+day=`cat ../TestData/day.date | sed -n "1,1p"`
 # 报告目录
 output="../Report/DiskPerformance/Outputs/"
 # 生成文件夹
@@ -484,6 +485,22 @@ nfs)
     echo "fio will run fio-nfs.sh"
     runio="fio-nfs.sh"
     ;;
+disk)
+    echo "fio will run fio-disk.sh"
+    # 判断参数4（磁盘名称）是否存在
+    if [ x$4 != x ]
+    then
+        runio="fio-disk.sh"
+        sed -i "s!d=\"testDisk\"!d=$4!g" ${runio}
+        # 生成文件夹
+        mkdir -p ${output}${day}/$4
+        # 重新定义数据存放位置
+        path=${output}${day}"/"$4"/"
+    else
+        echo "error! please enter disk name in \$4 !"
+        exit 0
+    fi
+    ;;
 *)
     echo "error! please enter volume-type!(fc/iscsi/nfs)"
     exit 0
@@ -554,5 +571,6 @@ case $3 in
 esac
 
 
+cp fio-disk.sh.bak fio-disk.sh
 
 echo "successful"
