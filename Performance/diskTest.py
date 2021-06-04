@@ -7,11 +7,15 @@ if parent_path not in sys.path:
 	sys.path.append(parent_path)
 
 from Config.performance import diskList
+from Common.timeOperate import zSleep
 
 if __name__ == "__main__":
 	"""
 		请务必保证配置文件中的盘符是要测试的盘符。
 	"""
+	# 生成日期配置文件
+	os.system("echo `date +$Y-%m-%d` >> ../TestData/day.date")
+
 
 	testList = diskList.split()
 	# 测试裸盘
@@ -21,9 +25,15 @@ if __name__ == "__main__":
 
 	# 创建zpool
 	os.system("cd ../Shell &&./zpoolCreate.sh")
+	zSleep("m")
+
 	for i in testList:
 		i = "a" + i
 
 		os.system("cd ../Shell && ./zfioPerformance.sh disk TEST-DISK 1 " + i)
 
 	os.system("ls -al")
+
+	os.system("rm ../TestData/day.date")
+
+
