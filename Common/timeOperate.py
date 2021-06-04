@@ -1,30 +1,24 @@
 import datetime
 import os
-from time import sleep
-from Config.currency import veryLongTime, longTime, mediumTime, shortTime, littleTime, instantaneous
 
 
 def returnAlldate():
 	date = str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
 	return date
 
-
 def returnDayTime():
 	date = str(datetime.datetime.now().strftime("%d-%H-%M-%S"))
 	return date
-
 
 def returnTime():
 	date = str(datetime.datetime.now().strftime("%H-%M-%S"))
 	return date
 
-
 def returnYearMounthDay():
 	date = str(datetime.datetime.now().strftime("%Y-%m-%d"))
 	return date
 
-
-def returnDayTimePng(path, dr):
+def returnDayTimePng(path,dr):
 	"""
 		Driver截图并返回
 	:param path: str
@@ -56,20 +50,3 @@ def returnYearMounthDayFile(path):
 		return dateFile
 	except:
 		return False
-
-
-def zSleep(zTime):
-	if zTime == "vl":
-		sleep(veryLongTime)
-	elif zTime == "l":
-		sleep(longTime)
-	elif zTime == "m":
-		sleep(mediumTime)
-	elif zTime == "s":
-		sleep(shortTime)
-	elif zTime == "i":
-		sleep(instantaneous)
-	elif zTime == "lt":
-		sleep(littleTime)
-	else:
-		sleep(zTime)

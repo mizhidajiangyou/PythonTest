@@ -15,13 +15,6 @@
 
 [缺陷及优化](#缺陷及优化)
 
-## 正常使用
-
-* 在TestCase_Pytest下创建test开头的Py文件
-
-* 根据需要引用Common里的函数可实现ui、接口、性能等自动化测试，可参照Demo文件中的一些模板。
-
-* 参照Demo的runner.py生成基于allure的测试报告
 
 ## 依赖
 `pip install matplotlib`
@@ -98,9 +91,21 @@ elementOperate.py
 * 提供异常情况下截图并存放UI/ErrorPng
 * 提供全屏截图功能
 
+### 已知缺陷
+
+### 待优化
+
 ## 接口性能自动化测试
 使用Locust，模版放置Demo。 待封装待优化。
 ### 模块构成
+
+### 待优化
+* 深入了解Locust机制
+* requests 库性能不佳，打算更改测试工具为Boomer（Golang）
+* Locust报告模块优化
+
+### 已知缺陷
+
 
 ## 磁盘性能自动化测试 
 
@@ -164,7 +169,7 @@ Shell/zfioPerformance.sh
 `deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-updates main restricted universe multiverse`
 `deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse`
 `deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-backports main restricted universe multiverse`
-`https://mirror.tuna.tsinghua.edu.cn/help/ubuntu/`
+
 * ssh启用
 一般只会安装客户端，所以需要安装服务端（）
 `sudo apt install openssh-server`
@@ -184,7 +189,6 @@ Shell/zfioPerformance.sh
 * 修改html文件对应：/etc/apache2/mods-available/dir.conf（可不做）
 
 #### 三、Django部署
-* python manage.py runserver
 
 * django-admin startproject MySite
 
@@ -251,10 +255,6 @@ Shell/zfioPerformance.sh
 * 折线图（makelines.py）中num数组生成方式
 * ~~indexDemo.html中的数据来源~~
 * ~~fio中磁盘参数动态获取~~
-* 深入了解Locust机制
-* requests 库性能不佳，打算更改测试工具为Boomer（Golang）
-* Locust报告模块优化
-* fio测试脚本向下兼容（目前仅支持3.16版本的fio）
 
 ### 异常处理
 
