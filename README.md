@@ -254,7 +254,8 @@ Shell/zfioPerformance.sh
 * 深入了解Locust机制
 * requests 库性能不佳，打算更改测试工具为Boomer（Golang）
 * Locust报告模块优化
-* fio测试脚本向下兼容（目前仅支持3.16版本的fio）
+* ~~fio测试脚本向下兼容（目前仅支持3.16版本的fio）~~
+* fio脚本\`命令定义在配置文件或头部
 
 ### 异常处理
 
