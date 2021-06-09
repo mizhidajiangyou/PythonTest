@@ -16,5 +16,5 @@ CFI = "192.168.0.233"
 CWWPN = "21000036ff963215"
 # 测试项目
 TEST_TRIM = ["NFS", "CIFS", "FC", "ISCSI"]
-
+entireDisk="/dev/sdc:/dev/sdd"
 

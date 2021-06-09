@@ -256,7 +256,7 @@ Shell/zfioPerformance.sh
 * Locust报告模块优化
 * ~~fio测试脚本向下兼容（目前仅支持3.16版本的fio）~~
 * fio脚本\`命令定义在配置文件或头部
-
+* 整合全部类型的fio脚本
 ### 异常处理
 
 * 现象：
