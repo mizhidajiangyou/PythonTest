@@ -23,6 +23,9 @@ if __name__ == "__main__":
 	for i in testList:
 		os.system("cd ../Shell && ./zfioPerformance.sh disk TEST-DISK 1 " + i)
 
+	# 整机测试
+	os.system("cd ../Shell && ./zfioPerformance.sh disk TEST-ENTIRE-DISK 1 entire")
+
 	# 创建zpool
 	os.system("cd ../Shell &&./zpoolCreate.sh")
 	zSleep("m")

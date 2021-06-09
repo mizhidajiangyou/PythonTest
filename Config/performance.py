@@ -1,7 +1,8 @@
 """
 	性能测试配置文件，请勿改动样式！
 """
-diskList="sdc sdd sde sdf sdg sdh sdi sdj sdk sdl sdm sdn sdo sdp sdq sdr sds sdt sdu sdv sdw sdx sdy sdz"
+diskList="sdc sdd sde sdy sdz"
+entireDisk="sdc sdd sde sdf sdg sdh sdi sdj sdk sdl sdm sdn sdo sdp sdq sdr sds sdt sdu sdv sdw sdx sdy sdz"
 # 服务端服务IP
 TEST_HOST = "192.168.0.123"
 # 服务端ISCSI的IP
@@ -16,5 +17,5 @@ CFI = "192.168.0.233"
 CWWPN = "21000036ff963215"
 # 测试项目
 TEST_TRIM = ["NFS", "CIFS", "FC", "ISCSI"]
-entireDisk="/dev/sdc:/dev/sdd"
+
 
