@@ -1,8 +1,9 @@
+"""
+时间相关操作；基础脚本；
+"""
 import datetime
 import os
 from time import sleep
-from Config.currency import veryLongTime, longTime, mediumTime, shortTime, littleTime, instantaneous
-
 
 def returnAlldate():
 	date = str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
@@ -59,6 +60,13 @@ def returnYearMounthDayFile(path):
 
 
 def zSleep(zTime):
+	# 定义脚本内等待时间
+	veryLongTime = 300
+	longTime = 180
+	mediumTime = 120
+	shortTime = 60
+	littleTime = 30
+	instantaneous = 10
 	if zTime == "vl":
 		sleep(veryLongTime)
 	elif zTime == "l":
