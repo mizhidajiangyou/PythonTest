@@ -29,12 +29,5 @@ ErrorMax = "尝试已达" + str(retryCount) + "次，失败！"
 jsDate = [{}]
 
 
-# 定义脚本内等待时间
-veryLongTime = 300
-longTime = 180
-mediumTime = 120
-shortTime = 60
-littleTime = 30
-instantaneous = 10
 
 
