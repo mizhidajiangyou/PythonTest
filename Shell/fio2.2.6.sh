@@ -133,7 +133,7 @@ th(){
                 num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "=" -f2 | cut -d "," -f1`
                 echo ${num:0-4}
                 echo "==============="${num:0:0-4}
-                #if ${num:0-4} -eq "kB/s";then
+                #if ${num:0-4} -eq "KB/s";then
                     #num=${num:0:0-4}/1024
                 #fi
 
@@ -153,7 +153,7 @@ th(){
                 num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "=" -f2 | cut -d "," -f1`
                 echo ${num:0-4}
                 echo "==============="num=${num:0:0-4}
-                #if ${num:0-4} -eq "kB/s";then
+                #if ${num:0-4} -eq "KB/s";then
                     #num=${num:0:0-4}/1024
                 #fi
                 # 替换x轴标注
@@ -200,11 +200,16 @@ barBuild(){
             for ((k=0;k<${#rwway[*]};k++))
             do
                 rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
-                num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "=" -f2 | cut -d "," -f1`
+                num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}'`
+                if [ ${num:0:4} == "iops" ]; then
+                    num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $3}'`
+                fi
+                num=`echo ${num}  | cut -d "=" -f2 | cut -d "," -f1`
+
                 # 单位
                 #echo ${num:0-4}
                 # 数值
-                 if [ ${num:0-4} == "kB/s" ]; then
+                 if [ ${num:0-4} == "KB/s" ]; then
                     num=`echo "scale=1; ${num:0:0-4}/1024" | bc`
                     num=${num}"MB/s"
                  fi
@@ -226,7 +231,7 @@ barBuild(){
                 # num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "=" -f2 | cut -d "," -f1`
                 # echo ${num:0-4}
                 # echo "==============="num=${num:0:0-4}
-                # #if ${num:0-4} -eq "kB/s";then
+                # #if ${num:0-4} -eq "KB/s";then
                     # #num=${num:0:0-4}/1024
                 # #fi
                 # # 替换x轴标注
@@ -271,8 +276,12 @@ barBuild(){
                 rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
                 #echo $2
                 #echo ${rname}
-                num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
 
+                num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $5}'`
+                if [ ${num:0:4} == "runt" ]; then
+                    num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}'`
+                fi
+                num=`echo ${num}  | cut -d "=" -f2 | cut -d "," -f1`
                 # 替换x轴标注
                 sed -i "s!mmm${k}!${num}!g" bar.py
                 # 替换数值
@@ -349,8 +358,19 @@ tableCreate(){
                 rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
                 #echo $2
                 #echo ${rname}
-                bw=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "=" -f2 | cut -d "," -f1`
-                iops=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
+
+                bw=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}'`
+                if [ ${bw:0:4} == "iops" ]; then
+                    bw=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $3}'`
+                fi
+                bw=`echo ${bw}  | cut -d "=" -f2 | cut -d "," -f1`
+
+                iops=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $5}'`
+                if [ ${iops:0:4} == "runt" ]; then
+                    iops=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}'`
+                fi
+                iops=`echo ${iops}  | cut -d "=" -f2 | cut -d "," -f1`
+
                 slat=`cat ${rp} |grep -C 2 "bw=" | grep -A 3 ${rname} | sed -n "3,1p" | awk '{print $5}' | cut -d "=" -f2 | cut -d "," -f1`
                 clat=`cat ${rp} |grep -C 2 "bw=" | grep -A 3 ${rname} | sed -n "4,1p" | awk '{print $5}' | cut -d "=" -f2 | cut -d "," -f1`
                 sed -i "s!m${k}bw!${bw}!g" ${tableFile}
@@ -388,12 +408,17 @@ getMax(){
                     # 测试项
                     rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
                     num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "=" -f2 | cut -d "," -f1`
+                    num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}'`
+                    if [ ${num:0:4} == "iops" ]; then
+                        num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $3}'`
+                    fi
+                    num=`echo ${num}  | cut -d "=" -f2 | cut -d "," -f1`
                     # 单位
                     # echo ${num:0-4}
                     # 数值
                     # echo ${num:0:0-4}
                     # if [ $(echo "max[${k}] < ${num:0:0-4}"|bc) = 1 ]
-                    if [ ${num:0-4} == "kB/s" ] ; then
+                    if [ ${num:0-4} == "KB/s" ] ; then
                         num=`echo "scale=1; ${num:0:0-4}/1024" | bc`
                         num=${num}"MB/s"
                     fi
@@ -434,7 +459,11 @@ getMax(){
                 do
                     # 测试项
                     rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
-                    num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
+                    num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $5}'`
+                    if [ ${num:0:4} == "runt" ]; then
+                        num=`cat ${rp} |grep -B 1 "bw=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}'`
+                    fi
+                    num=`echo ${num}  | cut -d "=" -f2 | cut -d "," -f1`
                     # 数值
                     # echo ${num}
                     # echo ${num:0-1}
