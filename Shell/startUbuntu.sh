@@ -48,3 +48,15 @@ pip install pytest-shutil
 pip install pymongo
 pip install pymysql
 pip install Django
+
+
+
+kvm(){
+grep -Eoc '(vmx|svm)' /proc/cpuinfo
+echo y |apt install cpu-checker
+echo y |apt install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virtinst virt-manager
+sudo systemctl start libvirtd.service
+sudo systemctl is-active libvirtd
+#sudo usermod -aG libvirt $USER
+#sudo usermod -aG KVM $USER
+}
