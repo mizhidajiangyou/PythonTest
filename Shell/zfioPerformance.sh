@@ -476,14 +476,26 @@ case $1 in
 fc)
     echo "fio will run fio-fc.sh"
     runio="fio-fc.sh"
+    # 生成文件夹
+    mkdir -p ${output}${day}/"fc"
+    # 重新定义数据存放位置
+    path=${output}${day}"/fc/"
     ;;
 iscsi)
     echo "fio will run fio-iscsi.sh"
     runio="fio-iscsi.sh"
+    # 生成文件夹
+    mkdir -p ${output}${day}/"iscsi"
+    # 重新定义数据存放位置
+    path=${output}${day}"/iscsi/"
     ;;
 nfs)
     echo "fio will run fio-nfs.sh"
     runio="fio-nfs.sh"
+    # 生成文件夹
+    mkdir -p ${output}${day}/"nfs"
+    # 重新定义数据存放位置
+    path=${output}${day}"/nfs/"
     ;;
 disk)
     echo "fio will run fio-disk.sh"
