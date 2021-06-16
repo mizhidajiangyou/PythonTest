@@ -10,7 +10,9 @@ echo y |apt-get install multipath-tools
 echo y |apt-get install default-jdk
 echo y |apt-get install default-jre
 echo y |apt-get install sysstat
-
+echo y |apt-get install open-iscsi
+echo y |apt-get install nfs-common
+echo y |apt-get install git
 
 echo "defaults {
 user_friendly_names	yes
