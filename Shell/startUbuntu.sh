@@ -10,7 +10,9 @@ echo y |apt-get install multipath-tools
 echo y |apt-get install default-jdk
 echo y |apt-get install default-jre
 echo y |apt-get install sysstat
-
+echo y |apt-get install open-iscsi
+echo y |apt-get install nfs-common
+echo y |apt-get install git
 
 echo "defaults {
 user_friendly_names	yes
@@ -48,3 +50,15 @@ pip install pytest-shutil
 pip install pymongo
 pip install pymysql
 pip install Django
+
+
+
+kvm(){
+grep -Eoc '(vmx|svm)' /proc/cpuinfo
+echo y |apt install cpu-checker
+echo y |apt install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virtinst virt-manager
+sudo systemctl start libvirtd.service
+sudo systemctl is-active libvirtd
+#sudo usermod -aG libvirt $USER
+#sudo usermod -aG KVM $USER
+}
