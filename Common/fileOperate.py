@@ -3,7 +3,6 @@ from Common.timeOperate import returnYearMounthDayFile
 import os
 import shutil
 import sys
-from Config.currency import veryLongTime,longTime,mediumTime,shortTime,littleTime,instantaneous
 
 # 实例化log模块
 fileLog = currencylog
@@ -149,19 +148,6 @@ def compareMD5(path):
 		fileLog.logger.error("compareERROR!")
 
 
-def zSleep(zTime):
-    if zTime == "vl":
-        sleep(veryLongTime)
-    elif zTime == "l":
-        sleep(longTime)
-    elif zTime == "m":
-        sleep(mediumTime)
-    elif zTime == "s":
-        sleep(shortTime)
-    elif zTime == "i":
-        sleep(instantaneous)
-    else:
-        sleep(zTime)
 
 
 
