@@ -25,6 +25,7 @@ rpname=()
 #文件存放目录
 fileList=()
 pngList=()
+ioCount=160
 
 
 # fileAddress=${path}${op}
@@ -466,6 +467,54 @@ getMax(){
         ;;
     esac
 }
+
+iostatReport(){
+    ioPath=${path}"iostat"
+    count=${#block[*]}*${#rwway[*]}
+    case $1 in
+    fc)
+        deviceList=(dm-0 dm-1 dm-2 dm-3 dm-4 dm-5 dm-6 dm-7)
+        ;;
+    iscsi)
+        deviceList=(`lsblk --scsi | grep iscsi | awk '{print $1}' | tr '\n' ':' | sed "s/:/ /g"`)
+        ;;
+    *)
+        echo "error!! no match!"
+        ;;
+    esac
+    for ((i=0;i<${#fileList[*]};i++))
+    do
+        for ((j=0;j<${count};j++))
+        do
+            for ((num=1;num<=${ioCount};num++))
+            do
+                readSum=0
+                writeSum=0
+                echo "start sum ${rpname[${j}+${i}*${count}]}"
+                for ((k=0;k<${#deviceList[*]};k++))
+                do
+                    # 初始化
+                    readIO=0
+                    writeIO=0
+                    # 获取每一行的数据
+                    readIO=cat ${ioPath} | grep -A 160 ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $2}'
+                    writeIO=cat ${ioPath} | grep -A 160 ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $3}'
+                    # 求和
+                    readSum=`echo $readSum+${readIO}|bc`
+                    writeSum=`echo $writeSum+${writeIO}|bc`
+                    echo "readSum=$readSum"
+                    echo "writeSum=$writeSum"
+                done
+                echo "==============fin============readSum=$readSum"
+                echo "==============fin============writeSum=$writeSum"
+                echo  $readSum >> ${rpname[${j}+${i}*${count}]}.iostat.read
+                echo  $writeSum >> ${rpname[${j}+${i}*${count}]}.iostat.write
+            done
+        done
+    done
+
+}
+
 
 
 
