@@ -25,7 +25,9 @@ rpname=()
 #文件存放目录
 fileList=()
 pngList=()
-ioCount=160
+iostatNum=`iostat |wc -l`
+statCount=160
+ioCount=`echo 160*${iostatNum}|bc`
 
 
 # fileAddress=${path}${op}
@@ -80,6 +82,8 @@ done
 # 测试fio
 fioTest(){
 count=${#block[*]}*${#rwway[*]}
+ioPath=${path}"ioPath"
+iostat -t 10 &>>${ioPath}&
 for ((i=0;i<=${#fileList[*]}-1;i++))
 do
     # 修改报告路径
@@ -88,10 +92,12 @@ do
     for ((j=0;j<=${count}-1;j++))
     do
         changeFile="${mode[${j}+${i}*${count}]} -name=${rpname[${j}+${i}*${count}]}"
+        echo ${rpname[${j}+${i}*${count}]} >> ${ioPath}
         echo "now is ${changeFile}"
         sed -i "s/${orgin}/${changeFile}/g" ${runio}
         #cat ${runio}
         ./${runio}
+        echo "=============fi===========" >> ${ioPath}
         # 还原fio文件
         sed -i "s/${changeFile}/${orgin}/g" ${runio}
         #cat ${runio}
@@ -100,6 +106,8 @@ do
     # 复原报告路径
     sed -i "s!${fileList[${i}]}!output!g" ${runio}
 done
+# 终止iostat
+ps -aux | grep iostat | sed -n "1,1p" | awk '{print $2}' |xargs kill -9
 }
 # 汇总报告输出
 allReportCreate(){   
@@ -478,15 +486,22 @@ iostatReport(){
     iscsi)
         deviceList=(`lsblk --scsi | grep iscsi | awk '{print $1}' | tr '\n' ':' | sed "s/:/ /g"`)
         ;;
+    disk)
+        poolname=`zpool list | sed -n "2,1p" | awk '{print $1}'`
+        cd /dev/zvol/${poolname}
+        deviceList=(`ls -al | grep zd | awk '{print $11}' | cut -d "/" -f3 | tr '\n' ':' | sed "s/:/ /g"`)
+        cd -
+        ;;
     *)
         echo "error!! no match!"
+        exit 0
         ;;
     esac
     for ((i=0;i<${#fileList[*]};i++))
     do
         for ((j=0;j<${count};j++))
         do
-            for ((num=1;num<=${ioCount};num++))
+            for ((num=1;num<=${statCount};num++))
             do
                 readSum=0
                 writeSum=0
@@ -497,11 +512,13 @@ iostatReport(){
                     readIO=0
                     writeIO=0
                     # 获取每一行的数据
-                    readIO=cat ${ioPath} | grep -A 160 ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $2}'
-                    writeIO=cat ${ioPath} | grep -A 160 ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $3}'
+                    readIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $2}'`
+                    writeIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $3}'`
+                    echo "readIO=========="${readIO}
+                    echo "writeIO========"${writeIO}
                     # 求和
-                    readSum=`echo $readSum+${readIO}|bc`
-                    writeSum=`echo $writeSum+${writeIO}|bc`
+                    readSum=`echo ${readSum}+${readIO}|bc`
+                    writeSum=`echo ${writeSum}+${writeIO}|bc`
                     echo "readSum=$readSum"
                     echo "writeSum=$writeSum"
                 done
@@ -586,11 +603,12 @@ case $3 in
     createFile
     fioTest
     allReportCreate
-    barBuild bw
-    barBuild iops
     tableCreate
     getMax bw
     getMax iops
+    iostatReport
+    barBuild bw
+    barBuild iops
     ;;
 2)
     echo "**only Bar**"
@@ -623,7 +641,13 @@ case $3 in
     getTestList
     createFile
     allReportCreate
-    ;;    
+    ;;
+7)
+    echo "**only iostatReport**"
+    getTestList
+    createFile
+    iostatReport
+    ;;
 *)
     echo "error!no this type!"
     echo "enter: 1--**all test** 2--**only Bar** 3--**only Max** 4--**only Fio** 5--**only Table** 6--**only All**"
