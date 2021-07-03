@@ -3,6 +3,7 @@ from Common.timeOperate import returnYearMounthDayFile
 import os
 import shutil
 import sys
+from numpy import array
 
 # 实例化log模块
 fileLog = currencylog
@@ -33,7 +34,7 @@ def readFileAndMakeList(path):
 	except FileNotFoundError:
 		fileLog.logger.error("file not found!")
 		return False
-	except :
+	except:
 		return False
 
 
@@ -98,24 +99,26 @@ def makeHtmlRport(orPath, html, js, css):
 		fileLog.logger.error("make html in :" + orPath + " failed!")
 		return False
 
-def createDir(path):
-    isExists=os.path.exists(path)
-    # 判断结果
-    if not isExists:
-        # 如果不存在则创建目录
-        os.makedirs(path)
-        fileLog.logger.debug(path+' 目录创建成功')
-    else:
-        # 如果目录存在则不创建，并提示目录已存在
-        fileLog.logger.debug(path+' 目录已存在')
 
-def copyFile(filePath,newPath):
-	try :
+def createDir(path):
+	isExists = os.path.exists(path)
+	# 判断结果
+	if not isExists:
+		# 如果不存在则创建目录
+		os.makedirs(path)
+		fileLog.logger.debug(path + ' 目录创建成功')
+	else:
+		# 如果目录存在则不创建，并提示目录已存在
+		fileLog.logger.debug(path + ' 目录已存在')
+
+
+def copyFile(filePath, newPath):
+	try:
 		# 获取当前路径下的文件名，返回List
 		fileNames = os.listdir(filePath)
 		for file in fileNames:
 			# 将文件命加入到当前文件路径后面
-			newDir = filePath +  file
+			newDir = filePath + file
 			# 如果是文件
 			if os.path.isfile(newDir):
 				# print(newDir)
@@ -124,18 +127,19 @@ def copyFile(filePath,newPath):
 			# 如果不是文件，递归这个文件夹的路径
 			else:
 				copyFile(newDir, newPath)
-		fileLog.logger.debug("复制" +filePath +"下的文件至"+newPath+"成功！" )
+		fileLog.logger.debug("复制" + filePath + "下的文件至" + newPath + "成功！")
 		fileLog.logger.info("复制成功！")
 	except:
 		fileLog.logger.error("error!")
 
+
 def compareMD5(path):
 	try:
-		list=readFileAndMakeList(path)
+		list = readFileAndMakeList(path)
 		if len(list) == 2:
 			if list[0] == list[1]:
 				fileLog.logger.info("md5值一致!")
-				fileLog.logger.debug("第一次的md5值为:"+ str(list[0]) +" 第二次的md5值为："+str(list[1]))
+				fileLog.logger.debug("第一次的md5值为:" + str(list[0]) + " 第二次的md5值为：" + str(list[1]))
 			else:
 				fileLog.logger.error("md5值不一致")
 				fileLog.logger.debug("第一次的md5值为:" + str(list[0]) + " 第二次的md5值为：" + str(list[1]))
@@ -146,9 +150,6 @@ def compareMD5(path):
 
 	except:
 		fileLog.logger.error("compareERROR!")
-
-
-
 
 
 if __name__ == "__main__":
@@ -164,6 +165,14 @@ if __name__ == "__main__":
 	# souPath = TESTPATH + "\Demo\DiskPerformanceReport\\"
 	# desPath = PERFORMANCEREPORT
 	# copyFile(souPath, desPath)
+	#
+	# path = TESTPATH +"\TestData\md5"
+	# compareMD5(path)
 
-	path = TESTPATH +"\TestData\md5"
-	compareMD5(path)
+	path = "../Report/DiskPerformance/2021-05-26/libaio-4k-write.iostat.write"
+	aa=readFileAndMakeList(path)
+	bb=[]
+	for i in range(0,len(aa)):
+		bb+=aa[i]
+	print(bb)
+
