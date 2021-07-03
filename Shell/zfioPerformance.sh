@@ -606,7 +606,7 @@ case $3 in
     tableCreate
     getMax bw
     getMax iops
-    iostatReport
+    iostatReport $1
     barBuild bw
     barBuild iops
     ;;
@@ -646,7 +646,7 @@ case $3 in
     echo "**only iostatReport**"
     getTestList
     createFile
-    iostatReport
+    iostatReport $1
     ;;
 *)
     echo "error!no this type!"
