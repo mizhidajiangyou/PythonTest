@@ -6,6 +6,11 @@
 day=`cat ../TestData/day.date | sed -n "1,1p"`
 # 报告目录
 output="../Report/DiskPerformance/Outputs/"
+# python文件准备
+cp ../Performance/bar.py ../Shell
+cp ../Performance/IOLine.py ../Shell
+cp bar.py bar.py-bak
+cp IOLine.py IOLine.py-bak
 # 生成文件夹
 mkdir -p ${output}${day}
 # 数据存放位置
@@ -25,9 +30,12 @@ rpname=()
 #文件存放目录
 fileList=()
 pngList=()
+# iostat行数统计
 iostatNum=`iostat |wc -l`
+# 计数
 statCount=160
-ioCount=`echo 160*${iostatNum}|bc`
+# 筛选行数=Iostat行数*计数
+ioCount=`echo ${statCount}*${iostatNum}|bc`
 
 
 # fileAddress=${path}${op}
@@ -82,7 +90,7 @@ done
 # 测试fio
 fioTest(){
 count=${#block[*]}*${#rwway[*]}
-ioPath=${path}"ioPath"
+ioPath=${path}"iostat"
 iostat -t 10 &>>${ioPath}&
 for ((i=0;i<=${#fileList[*]}-1;i++))
 do
@@ -250,7 +258,7 @@ barBuild(){
             rm bar.py
             cp bar.py-bak bar.py
             done
-        
+
         done
 
         # 复原
@@ -266,27 +274,27 @@ barBuild(){
         #echo ${rpname[*]}
         # 定义数据来源文件
         rp=${fileList[${i}]}
-        echo "from:"${rp}"building png"        
+        echo "from:"${rp}"building png"
         for ((j=0;j<${#block[*]};j++))
         do
             # 替换标题
             barTitle=${ioway[${i}]}-${block[${j}]}-$1
             echo ${barTitle}
-            sed -i "s/test-title/${barTitle}/" bar.py            
+            sed -i "s/test-title/${barTitle}/" bar.py
             #替换具体参数
-            
+
             for ((k=0;k<${#rwway[*]};k++))
             do
                 rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
-                #echo $2                
+                #echo $2
                 #echo ${rname}
                 num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
 
                 # 替换x轴标注
                 sed -i "s!mmm${k}!${num}!g" bar.py
                 # 替换数值
-                sed -i "s!label${k}!${rname}!g" bar.py 
-            done   
+                sed -i "s!label${k}!${rname}!g" bar.py
+            done
             # 定义PNG
             sed -i "s!barpng!${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png!g" bar.py
             # 执行py文件
@@ -296,12 +304,12 @@ barBuild(){
             # for ((k=0;k<${#rwway[*]};k++))
             # do
                 # rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
-                # num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`                
+                # num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
                 # # 替换x轴标注
                 # sed -i "s!${num}!mmm${k}!g" bar.py
                 # # 替换数值
-                # sed -i "s!${rname}!label${k}!g" bar.py 
-            # done            
+                # sed -i "s!${rname}!label${k}!g" bar.py
+            # done
             # sed -i "s/${barTitle}/test-title/" bar.py
             # echo "${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png"
             # sed -i "s!${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png!barpng!g" bar.py
@@ -514,19 +522,46 @@ iostatReport(){
                     # 获取每一行的数据
                     readIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $2}'`
                     writeIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $3}'`
-                    echo "readIO=========="${readIO}
-                    echo "writeIO========"${writeIO}
+                    # echo "readIO=========="${readIO}
+                    # echo "writeIO========"${writeIO}
                     # 求和
                     readSum=`echo ${readSum}+${readIO}|bc`
                     writeSum=`echo ${writeSum}+${writeIO}|bc`
                     echo "readSum=$readSum"
                     echo "writeSum=$writeSum"
                 done
-                echo "==============fin============readSum=$readSum"
-                echo "==============fin============writeSum=$writeSum"
-                echo  $readSum >> ${rpname[${j}+${i}*${count}]}.iostat.read
-                echo  $writeSum >> ${rpname[${j}+${i}*${count}]}.iostat.write
+                # echo "==============fin============readSum=$readSum"
+                # echo "==============fin============writeSum=$writeSum"
+                # 生成读数据文件
+                echo  $readSum >> ${path}${rpname[${j}+${i}*${count}]}.iostat.read
+                # 从kb/s换算为mb/s
+                readSum1=`echo "scale=1; ${readSum}/1024" | bc`
+                echo "read sum chage=="${readSum1}"MB/S"
+                echo ${readSum1} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.read.mb
+                # 计算IOPS（4k）
+                readSum2=`echo "scale=1; ${readSum}/4" | bc`
+                echo "read sum chage=="${readSum2}"IOPS"
+                echo ${readSum2} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.read.iops
+                
+                 # 生成写数据文件
+                echo  $writeSum >> ${path}${rpname[${j}+${i}*${count}]}.iostat.write
+                # 从kb/s换算为mb/s
+                writeSum1=`echo "scale=1; ${writeSum}/1024" | bc`
+                echo "write sum chage=="${writeSum1}"MB/S"
+                echo ${writeSum1} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.write.mb
+                # 计算IOPS（4k）
+                writeSum2=`echo "scale=1; ${writeSum}/4" | bc`
+                echo "write sum chage=="${writeSum2}"IOPS"
+                echo ${writeSum2} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.write.iops
             done
+            cp IOLine.py-bak IOLine.py
+            sed -i "s/LINE_TITLE/${path}${rpname[${j}+${i}*${count}]}.iostat.read/g" IOLine.py
+            sed -i "s!SAVE_PATH!${path}!g" IOLine.py
+            python3 IOLine.py
+            cp IOLine.py-bak IOLine.py
+            sed -i "s/LINE_TITLE/${path}${rpname[${j}+${i}*${count}]}.iostat.write/g" IOLine.py
+            sed -i "s!SAVE_PATH!${path}!g" IOLine.py
+            python3 IOLine.pypython3 IOLine.py
         done
     done
 
@@ -606,7 +641,7 @@ case $3 in
     tableCreate
     getMax bw
     getMax iops
-    iostatReport $1
+    iostatReport $1 $4
     barBuild bw
     barBuild iops
     ;;
@@ -646,11 +681,11 @@ case $3 in
     echo "**only iostatReport**"
     getTestList
     createFile
-    iostatReport $1
+    iostatReport $1 $4
     ;;
 *)
     echo "error!no this type!"
-    echo "enter: 1--**all test** 2--**only Bar** 3--**only Max** 4--**only Fio** 5--**only Table** 6--**only All**"
+    echo "enter: 1--**all test** 2--**only Bar** 3--**only Max** 4--**only Fio** 5--**only Table** 6--**only All** 7--**only iostatReport"
     exit 0
     ;;
 esac
