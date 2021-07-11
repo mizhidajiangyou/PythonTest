@@ -483,7 +483,7 @@ getMax(){
         ;;
     esac
 }
-
+# 实时IO图生成
 iostatReport(){
     ioPath=${path}"iostat"
     count=${#block[*]}*${#rwway[*]}

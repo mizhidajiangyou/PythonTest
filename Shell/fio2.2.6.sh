@@ -6,6 +6,11 @@
 day=`cat ../TestData/day.date | sed -n "1,1p"`
 # 报告目录
 output="../Report/DiskPerformance/Outputs/"
+# python文件准备
+cp ../Performance/bar.py ../Shell
+cp ../Performance/IOLine.py ../Shell
+cp bar.py bar.py-bak
+cp IOLine.py IOLine.py-bak
 # 生成文件夹
 mkdir -p ${output}${day}
 # 数据存放位置
@@ -25,11 +30,12 @@ rpname=()
 #文件存放目录
 fileList=()
 pngList=()
-
-
-# fileAddress=${path}${op}
-# 创建测试目录
-# mkdir -p ${fileAddress}
+# iostat行数统计
+iostatNum=`iostat |wc -l`
+# 计数
+statCount=180
+# 筛选行数=Iostat行数*计数
+ioCount=`echo ${statCount}*${iostatNum}|bc`
 
 
 #生成测试项
@@ -79,6 +85,8 @@ done
 # 测试fio
 fioTest(){
 count=${#block[*]}*${#rwway[*]}
+ioPath=${path}"iostat"
+iostat -t 10 &>>${ioPath}&
 for ((i=0;i<=${#fileList[*]}-1;i++))
 do
     # 修改报告路径
@@ -87,10 +95,12 @@ do
     for ((j=0;j<=${count}-1;j++))
     do
         changeFile="${mode[${j}+${i}*${count}]} -name=${rpname[${j}+${i}*${count}]}"
+        echo ${rpname[${j}+${i}*${count}]} >> ${ioPath}
         echo "now is ${changeFile}"
         sed -i "s/${orgin}/${changeFile}/g" ${runio}
         #cat ${runio}
         ./${runio}
+        echo "=============fi===========" >> ${ioPath}
         # 还原fio文件
         sed -i "s/${changeFile}/${orgin}/g" ${runio}
         #cat ${runio}
@@ -99,6 +109,8 @@ do
     # 复原报告路径
     sed -i "s!${fileList[${i}]}!output!g" ${runio}
 done
+# 终止iostat
+ps -aux | grep iostat | sed -n "1,1p" | awk '{print $2}' |xargs kill -9
 }
 # 汇总报告输出
 allReportCreate(){
@@ -495,7 +507,89 @@ getMax(){
         ;;
     esac
 }
+# 实时IO图生成
+iostatReport(){
+    ioPath=${path}"iostat"
+    count=${#block[*]}*${#rwway[*]}
+    case $1 in
+    fc)
+        deviceList=(dm-0 dm-1 dm-2 dm-3 dm-4 dm-5 dm-6 dm-7)
+        ;;
+    iscsi)
+        deviceList=(`lsblk --scsi | grep iscsi | awk '{print $1}' | tr '\n' ':' | sed "s/:/ /g"`)
+        ;;
+    disk)
+        poolname=`zpool list | sed -n "2,1p" | awk '{print $1}'`
+        cd /dev/zvol/${poolname}
+        deviceList=(`ls -al | grep zd | awk '{print $11}' | cut -d "/" -f3 | tr '\n' ':' | sed "s/:/ /g"`)
+        cd -
+        ;;
+    *)
+        echo "error!! no match!"
+        exit 0
+        ;;
+    esac
+    for ((i=0;i<${#fileList[*]};i++))
+    do
+        for ((j=0;j<${count};j++))
+        do
+            for ((num=1;num<=${statCount};num++))
+            do
+                readSum=0
+                writeSum=0
+                echo "start sum ${rpname[${j}+${i}*${count}]}"
+                for ((k=0;k<${#deviceList[*]};k++))
+                do
+                    # 初始化
+                    readIO=0
+                    writeIO=0
+                    # 获取每一行的数据
+                    readIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $2}'`
+                    writeIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $3}'`
+                    # echo "readIO=========="${readIO}
+                    # echo "writeIO========"${writeIO}
+                    # 求和
+                    readSum=`echo ${readSum}+${readIO}|bc`
+                    writeSum=`echo ${writeSum}+${writeIO}|bc`
+                    echo "readSum=$readSum"
+                    echo "writeSum=$writeSum"
+                done
+                # echo "==============fin============readSum=$readSum"
+                # echo "==============fin============writeSum=$writeSum"
+                # 生成读数据文件
+                echo  $readSum >> ${path}${rpname[${j}+${i}*${count}]}.iostat.read
+                # 从kb/s换算为mb/s
+                readSum1=`echo "scale=1; ${readSum}/1024" | bc`
+                echo "read sum chage=="${readSum1}"MB/S"
+                echo ${readSum1} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.read.mb
+                # 计算IOPS（4k）
+                readSum2=`echo "scale=1; ${readSum}/4" | bc`
+                echo "read sum chage=="${readSum2}"IOPS"
+                echo ${readSum2} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.read.iops
 
+                 # 生成写数据文件
+                echo  $writeSum >> ${path}${rpname[${j}+${i}*${count}]}.iostat.write
+                # 从kb/s换算为mb/s
+                writeSum1=`echo "scale=1; ${writeSum}/1024" | bc`
+                echo "write sum chage=="${writeSum1}"MB/S"
+                echo ${writeSum1} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.write.mb
+                # 计算IOPS（4k）
+                writeSum2=`echo "scale=1; ${writeSum}/4" | bc`
+                echo "write sum chage=="${writeSum2}"IOPS"
+                echo ${writeSum2} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.write.iops
+            done
+            cp IOLine.py-bak IOLine.py
+            sed -i "s/LINE_TITLE/${path}${rpname[${j}+${i}*${count}]}.iostat.read/g" IOLine.py
+            sed -i "s!SAVE_PATH!${path}!g" IOLine.py
+            python3 IOLine.py
+            cp IOLine.py-bak IOLine.py
+            sed -i "s/LINE_TITLE/${path}${rpname[${j}+${i}*${count}]}.iostat.write/g" IOLine.py
+            sed -i "s!SAVE_PATH!${path}!g" IOLine.py
+            python3 IOLine.pypython3 IOLine.py
+        done
+    done
+
+}
 
 
 
