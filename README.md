@@ -126,6 +126,8 @@ Performance/makelines.py
 Common/elementOperate.py
 效果：<img src="https://github.com/mizhidajiangyou/myTest/blob/performance/Report/DiskPerformance/2021-05-26/all.png" width="100" height="200" />
 
+Performance/IOLines.py
+![Image text](https://github.com/mizhidajiangyou/myTest/blob/performance/Report/DiskPerformance/2021-05-26/disk-write.png)
 ##### 柱状图
 
 ##### 折线图
@@ -237,6 +239,7 @@ Shell/zfioPerformance.sh
 * ~~iops带k情况下最大值取不到的问题（fix 21-0505）~~
 * ~~根据文件生成折线图IOPS图存在取值错误（fix 21-0520）~~
 * ~~linux下无SimHei问题(fix 21-0521)~~
+*利用封装组件zCharts做出来的图纵坐标无法显示
 
 ### 待优化
 * Linux环境下支持中文
