@@ -33,7 +33,7 @@ pngList=()
 # iostat行数统计
 iostatNum=`iostat |wc -l`
 # 计数
-statCount=160
+statCount=180
 # 筛选行数=Iostat行数*计数
 ioCount=`echo ${statCount}*${iostatNum}|bc`
 
