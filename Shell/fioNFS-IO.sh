@@ -23,7 +23,7 @@ date="test.txt"
 block=(4k 1M 128k)
 ioway=(libaio sync)
 rwway=(randwrite randread write read)
-orgin=" -ioengine=ioway -bs=block -rw=rwway -name=reportname" 
+orgin=" -ioengine=ioway -bs=block -rw=rwway -name=reportname"
 #生成后的测试项目
 mode=()
 rpname=()
@@ -31,7 +31,7 @@ rpname=()
 fileList=()
 pngList=()
 # iostat行数统计
-iostatNum=`iostat |wc -l`
+iostatNum=`nfsiostat |wc -l`
 # 计数
 statCount=180
 # 筛选行数=Iostat行数*计数
@@ -70,9 +70,9 @@ createFile(){
 for ((i=0;i<=${#ioway[*]}-1;i++))
 do
     #设定文件名
-    fn=${path}${op}-${ioway[i]}-${date}  
+    fn=${path}${op}-${ioway[i]}-${date}
     #设定PNG文件名
-    #png=${path}${op}-${ioway[i]}-${date}.png 
+    #png=${path}${op}-${ioway[i]}-${date}.png
     #生成报告存放数组
     fileList[${#fileList[*]}]=${fn}
     #生成图片存放数组
@@ -80,9 +80,9 @@ do
 done
 
 for ((i=0;i<${#fileList[*]};i++))
-do  
+do
     echo "create ${fileList[${i}]}"
-    sleep 1    
+    sleep 1
     touch ${fileList[${i}]}
 done
 
@@ -91,7 +91,7 @@ done
 fioTest(){
 count=${#block[*]}*${#rwway[*]}
 ioPath=${path}"iostat"
-iostat -t 10 &>>${ioPath}&
+nfsiostat 10 &>>${ioPath}&
 for ((i=0;i<=${#fileList[*]}-1;i++))
 do
     # 修改报告路径
@@ -109,16 +109,16 @@ do
         # 还原fio文件
         sed -i "s/${changeFile}/${orgin}/g" ${runio}
         #cat ${runio}
-        
+
     done
     # 复原报告路径
     sed -i "s!${fileList[${i}]}!output!g" ${runio}
 done
-# 终止iostat
-ps -aux | grep iostat | sed -n "1,1p" | awk '{print $2}' |xargs kill -9
+# 终止nfsiostat
+ps -aux | grep nfsiostat | sed -n "1,1p" | awk '{print $2}' |xargs kill -9
 }
 # 汇总报告输出
-allReportCreate(){   
+allReportCreate(){
     for ((i=0;i<${#fileList[*]};i++))
     do
         echo "======================================================${ioway[${i}]}======================================================" >> ${path}${op}-all-${date}
@@ -132,33 +132,33 @@ th(){
         echo ${rpname[*]}
         # 定义数据来源文件
         rp=${fileList[${i}]}
-        echo "from:"${rp}"building png"        
+        echo "from:"${rp}"building png"
         for ((j=0;j<${#block[*]};j++))
         do
             # 替换标题
             barTitle=${ioway[${i}]}-${block[${j}]}-$1
             echo ${barTitle}
-            sed -i "s/test-title/${barTitle}/" bar.py            
+            sed -i "s/test-title/${barTitle}/" bar.py
             #替换具体参数
-            
+
             for ((k=0;k<${#rwway[*]};k++))
             do
                 rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
-                #echo $2                
+                #echo $2
                 #echo ${rname}
-                
+
                 num=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "(" -f2 | cut -d ")" -f1`
                 echo ${num:0-4}
                 echo "==============="${num:0:0-4}
                 #if ${num:0-4} -eq "kB/s";then
                     #num=${num:0:0-4}/1024
                 #fi
-                
+
                 # 替换x轴标注
                 sed -i "s!mmm${k}!${num:0:0-4}!g" bar.py
                 # 替换数值
-                sed -i "s!label${k}!${rname}!g" bar.py 
-            done   
+                sed -i "s!label${k}!${rname}!g" bar.py
+            done
             # 定义PNG
             sed -i "s!barpng!${path}${op}-${barTitle}.png!g" bar.py
             # 执行py文件
@@ -176,13 +176,13 @@ th(){
                 # 替换x轴标注
                 sed -i "s!${num:0:0-4}!mmm${k}!g" bar.py
                 # 替换数值
-                sed -i "s!${rname}!label${k}!g" bar.py 
-            done            
+                sed -i "s!${rname}!label${k}!g" bar.py
+            done
             sed -i "s/${barTitle}/test-title/" bar.py
             echo "${path}${op}-${barTitle}.png"
             sed -i "s!${path}${op}-${barTitle}.png!barpng!g" bar.py
         done
-        
+
     done
 
 }
@@ -191,7 +191,7 @@ barBuild(){
     #预置参数预防获取不到值的情况
     num=-1
     # 判断生成类型
-    case $1 in 
+    case $1 in
 
     bw)
         echo "create bwPNG"
@@ -203,7 +203,7 @@ barBuild(){
         # echo ${rpname[*]}
         # 定义数据来源文件
         rp=${fileList[${i}]}
-        echo "from:"${rp}"building png"        
+        echo "from:"${rp}"building png"
         for ((j=0;j<${#block[*]};j++))
         do
             # 修改y轴
@@ -211,9 +211,9 @@ barBuild(){
             # 替换标题
             barTitle=${ioway[${i}]}-${block[${j}]}-$1
             echo "now is ${barTitle}"
-            sed -i "s/test-title/${barTitle}/" bar.py            
+            sed -i "s/test-title/${barTitle}/" bar.py
             #替换具体参数
-            
+
             for ((k=0;k<${#rwway[*]};k++))
             do
                 rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
@@ -226,12 +226,12 @@ barBuild(){
                     num=${num}"MB/s"
                  fi
 
-                
+
                 # 替换x轴标注
                 sed -i "s!mmm${k}!${num:0:0-4}!g" bar.py
                 # 替换数值
-                sed -i "s!label${k}!${rname}!g" bar.py 
-            done   
+                sed -i "s!label${k}!${rname}!g" bar.py
+            done
             # 定义PNG
             sed -i "s!barpng!${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png!g" bar.py
             # 执行py文件
@@ -249,8 +249,8 @@ barBuild(){
                 # # 替换x轴标注
                 # sed -i "s!${num:0:0-4}!mmm${k}!g" bar.py
                 # # 替换数值
-                # sed -i "s!${rname}!label${k}!g" bar.py 
-            # done            
+                # sed -i "s!${rname}!label${k}!g" bar.py
+            # done
             # sed -i "s/${barTitle}/test-title/" bar.py
             # echo "${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png"
             # sed -i "s!${path}${op}-${ioway[${i}]}--${block[${j}]}--$1.png!barpng!g" bar.py
@@ -318,7 +318,7 @@ barBuild(){
             rm bar.py
             cp bar.py-bak bar.py
             done
-        
+
         done
 
         #sed -i "s!IOPS!miaoshu!g" bar.py
@@ -338,14 +338,14 @@ tableCreate(){
     do
         # 定义数据来源文件
         rp=${fileList[${i}]}
-        echo "from:"${rp}" building table" 
-        echo "=================================================${ioway[${i}]}=================================================" >> ${tableFile}       
-        
-        
+        echo "from:"${rp}" building table"
+        echo "=================================================${ioway[${i}]}=================================================" >> ${tableFile}
+
+
         # 定义输出文件
         for ((j=0;j<${#block[*]};j++))
         do
-            echo "************************************${block[${j}]}************************************" >> ${tableFile}     
+            echo "************************************${block[${j}]}************************************" >> ${tableFile}
             echo "
 ---------------------------------------------------------------------------------------------
 |                    |    block随机写      |    block随机读    |    block顺序写    |    block顺序读    |
@@ -358,29 +358,29 @@ tableCreate(){
 ---------------------------------------------------------------------------------------------
 |  clat (usec)       |    m0clat    |    m1clat    |    m2clat    |    m3clat    |
 
-----------------------------------------------------------------------------------------------" >>  ${tableFile}  
-            sed -i "s!block!${block[${j}]}!g" ${tableFile} 
-            
+----------------------------------------------------------------------------------------------" >>  ${tableFile}
+            sed -i "s!block!${block[${j}]}!g" ${tableFile}
+
             for ((k=0;k<${#rwway[*]};k++))
             do
                 rname=${rpname[(${i}*${#block[*]}+${j})*${#rwway[*]}+${k}]}
-                #echo $2                
+                #echo $2
                 #echo ${rname}
                 bw=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $4}' | cut -d "(" -f2 | cut -d ")" -f1`
                 iops=`cat ${rp} |grep -B 1 "BW=" | grep -A 1 ${rname} | sed -n "2,1p" | awk '{print $2}' | cut -d "=" -f2 | cut -d "," -f1`
                 slat=`cat ${rp} |grep -C 2 "BW=" | grep -A 3 ${rname} | sed -n "3,1p" | awk '{print $5}' | cut -d "=" -f2 | cut -d "," -f1`
                 clat=`cat ${rp} |grep -C 2 "BW=" | grep -A 3 ${rname} | sed -n "4,1p" | awk '{print $5}' | cut -d "=" -f2 | cut -d "," -f1`
-                sed -i "s!m${k}bw!${bw}!g" ${tableFile} 
-                sed -i "s!m${k}iops!${iops}!g" ${tableFile} 
-                sed -i "s!m${k}slat!${slat}!g" ${tableFile} 
-                sed -i "s!m${k}clat!${clat}!g" ${tableFile} 
-                
-            done   
-            
-        done            
-            
-            
-        
+                sed -i "s!m${k}bw!${bw}!g" ${tableFile}
+                sed -i "s!m${k}iops!${iops}!g" ${tableFile}
+                sed -i "s!m${k}slat!${slat}!g" ${tableFile}
+                sed -i "s!m${k}clat!${clat}!g" ${tableFile}
+
+            done
+
+        done
+
+
+
     done
 }
 # 最大值生成
@@ -436,7 +436,7 @@ getMax(){
         # echo ${max[*]}
         echo "=========================================MaxBW=========================================" >> ${maxBwFile}
         echo ${max[*]} >> ${maxBwFile}
-        
+
         ;;
     iops)
         echo "create iopsMAX"
@@ -483,22 +483,13 @@ getMax(){
         ;;
     esac
 }
-# 实时IO图生成
+
 iostatReport(){
     ioPath=${path}"iostat"
     count=${#block[*]}*${#rwway[*]}
     case $1 in
-    fc)
-        deviceList=(dm-0 dm-1 dm-2 dm-3 dm-4 dm-5 dm-6 dm-7)
-        ;;
-    iscsi)
-        deviceList=(`lsblk --scsi | grep iscsi | awk '{print $1}' | tr '\n' ':' | sed "s/:/ /g"`)
-        ;;
-    disk)
-        poolname=`zpool list | sed -n "2,1p" | awk '{print $1}'`
-        cd /dev/zvol/${poolname}
-        deviceList=(`ls -al | grep zd | awk '{print $11}' | cut -d "/" -f3 | tr '\n' ':' | sed "s/:/ /g"`)
-        cd -
+    nfs)
+        deviceList=(/mnt/n10 /mnt/n11 /mnt/n12 /mnt/n13 /mnt/n20 /mnt/n21 /mnt/n22 /mnt/n23)
         ;;
     *)
         echo "error!! no match!"
@@ -520,8 +511,9 @@ iostatReport(){
                     readIO=0
                     writeIO=0
                     # 获取每一行的数据
-                    readIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $2}'`
-                    writeIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep ${deviceList[$k]} | sed -n "${num},1p"| awk '{print $3}'`
+                    lineNum=`echo ${num}*3-1|bc`
+                    readIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} | grep -A 9 -w ${deviceList[$k]} | grep -A 1 read | sed -n "${lineNum},1p" | awk '{print $2}'`
+                    writeIO=`cat ${ioPath} | grep -A ${ioCount} ${rpname[${j}+${i}*${count}]} |grep -A 9 -w ${deviceList[$k]} | grep -A 1 write | sed -n "${lineNum},1p" | awk '{print $2}'`
                     # echo "readIO=========="${readIO}
                     # echo "writeIO========"${writeIO}
                     # 求和
@@ -542,7 +534,7 @@ iostatReport(){
                 readSum2=`echo "scale=1; ${readSum}/4" | bc`
                 echo "read sum chage=="${readSum2}"IOPS"
                 echo ${readSum2} >> ${path}${rpname[${j}+${i}*${count}]}.iostat.read.iops
-                
+
                  # 生成写数据文件
                 echo  $writeSum >> ${path}${rpname[${j}+${i}*${count}]}.iostat.write
                 # 从kb/s换算为mb/s
@@ -572,7 +564,7 @@ iostatReport(){
 
 
 #参数1位类型
-case $1 in 
+case $1 in
 
 fc)
     echo "fio will run fio-fc.sh"
@@ -631,7 +623,7 @@ else
 fi
 #参数3设定执行方式
 
-case $3 in 
+case $3 in
 1)
     echo "**all test**"
     getTestList
@@ -648,7 +640,7 @@ case $3 in
 2)
     echo "**only Bar**"
     getTestList
-    createFile    
+    createFile
     barBuild bw
     barBuild iops
     ;;
