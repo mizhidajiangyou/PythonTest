@@ -239,7 +239,7 @@ Shell/zfioPerformance.sh
 * ~~iops带k情况下最大值取不到的问题（fix 21-0505）~~
 * ~~根据文件生成折线图IOPS图存在取值错误（fix 21-0520）~~
 * ~~linux下无SimHei问题(fix 21-0521)~~
-*利用封装组件zCharts做出来的图纵坐标无法显示
+* 利用封装组件zCharts做出来的图纵坐标无法显示
 
 ### 待优化
 * Linux环境下支持中文
