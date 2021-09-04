@@ -519,13 +519,40 @@ iostatReport(){
         deviceList=(`lsblk --scsi | grep iscsi | awk '{print $1}' | tr '\n' ':' | sed "s/:/ /g"`)
         ;;
     disk)
-        poolname=`zpool list | sed -n "2,1p" | awk '{print $1}'`
-        cd /dev/zvol/${poolname}
-        deviceList=(`ls -al | grep zd | awk '{print $11}' | cut -d "/" -f3 | tr '\n' ':' | sed "s/:/ /g"`)
-        cd -
+        if [ x$2 != x ]
+        then
+            echo "auto chose volume/entire/ondisk!"
+            case ${2:0:1} in
+            v)
+                poolname=`zpool list | sed -n "2,1p" | awk '{print $1}'`
+                cd /dev/zvol/${poolname}
+                deviceList=(`ls -al | grep zd | awk '{print $11}' | cut -d "/" -f3 | tr '\n' ':' | sed "s/:/ /g"`)
+                cd -
+                ;;
+            e)
+                cd ../Config/
+                deviceList=(`cat performance.py | grep entireDisk | cut -d "\"" -f2 | tr " " ":" | sed "s/:/ /g"`)
+                cd -
+                ;;
+            m)
+                deviceList=$2
+                ;;
+            n)
+                deviceList=$2
+                ;;
+            s)
+                deviceList=$2
+                ;;
+            *)
+                echo "error type! in make IOreport"
+                ;;
+            esac
+         else
+            echo "error no type! in make IOreport"
+         fi
         ;;
     *)
-        echo "error!! no match!"
+        echo "error no match! in make IOreport"
         exit 0
         ;;
     esac
