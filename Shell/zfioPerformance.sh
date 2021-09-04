@@ -566,8 +566,70 @@ iostatReport(){
     done
 
 }
+# 获取硬件信息
+getTestInfo(){
+infoFile="${path}${op}-Info-${date}.table"
+echo "****************************************get memory info****************************************"  >> ${infoFile}
+echo "################FREE -H################" >> ${infoFile}
+free -h >> ${infoFile}
+echo "################DMIDECODE################" >> ${infoFile}
+dmidecode -t memory | grep Size >> ${infoFile}
+echo "****************************************get cpu info****************************************" >> ${infoFile}
+echo "################LSCPU################" >> ${infoFile}
+lscpu >> ${infoFile}
+echo "################PROC/CPUINFO################" >> ${infoFile}
+cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c >> ${infoFile}
+echo "****************************************get pci info****************************************" >> ${infoFile}
+echo "################QLogic################" >> ${infoFile}
+lspci | grep QLogic >> ${infoFile}
+echo "################LSI################" >> ${infoFile}
+lspci |  grep LSI >> ${infoFile}
+echo "################Ethernet################" >> ${infoFile}
+lspci |  grep Ethernet >> ${infoFile}
+echo "****************************************get FC info****************************************" >> ${infoFile}
+echo "################WWPN################" >> ${infoFile}
+cat /sys/class/fc_host/*/port_name >> ${infoFile}
+echo "################STATE################" >> ${infoFile}
+cat /sys/class/fc_host/*/port_state >> ${infoFile}
+echo "################SYMBOLIC################" >> ${infoFile}
+cat /sys/class/fc_host/*/symbolic_name >> ${infoFile}
+case $1 in
+disk)
+    echo "****************************************get disk info****************************************" >> ${infoFile}
+    case ${2:0:1} in
+    e)
+       cd ../Performance/
+       deviceList=(`cat urlConfig.py |grep entireDisk | cut -d "\"" -f2 |te " " ":" | sed "s/:/ /g"`)
+       cd -
+       ;;
+    s)
+       deviceList=$2
+       ;;
+    n)
+       deviceList=$2
+       ;;
+    *)
+       deviceList=(dump)
+       ;;
+    esac
+    ;;
+*)
+    echo "dump get disk info!" >> ${infoFile}
+    ;;
+esac
+
+for ((i=0;i<${#deviceList[*]};i++))
+do
+    if [ "$deviceList[0]" == "dump" ];then
+        echo "dump get disk info!" >> ${infoFile}
+    else
+        echo "################$deviceList[${i}]################" >> ${infoFile}
+        smartctl -a /dev/${deviceList[${i}]} >> ${infoFile}
+    fi
+done
 
 
+}
 
 
 
@@ -644,6 +706,7 @@ case $3 in
     iostatReport $1 $4
     barBuild bw
     barBuild iops
+    getTestInfo $1 $4
     ;;
 2)
     echo "**only Bar**"
@@ -683,9 +746,15 @@ case $3 in
     createFile
     iostatReport $1 $4
     ;;
+8)
+    echo "**only getdiskInfo**"
+    getTestList
+    createFile
+    getTestInfo $1 $4
+    ;;
 *)
     echo "error!no this type!"
-    echo "enter: 1--**all test** 2--**only Bar** 3--**only Max** 4--**only Fio** 5--**only Table** 6--**only All** 7--**only iostatReport"
+    echo "enter: 1--**all test** 2--**only Bar** 3--**only Max** 4--**only Fio** 5--**only Table** 6--**only All** 7--**only iostatReport** 8--**only diskInfo**"
     exit 0
     ;;
 esac

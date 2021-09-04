@@ -166,13 +166,13 @@ if __name__ == "__main__":
 	# desPath = PERFORMANCEREPORT
 	# copyFile(souPath, desPath)
 	#
-	# path = TESTPATH +"\TestData\md5"
-	# compareMD5(path)
+	path = TESTPATH +"\TestData\md5"
+	compareMD5(path)
 
-	path = "../Report/DiskPerformance/2021-05-26/libaio-4k-write.iostat.write"
-	aa=readFileAndMakeList(path)
-	bb=[]
-	for i in range(0,len(aa)):
-		bb+=aa[i]
-	print(bb)
+	# path = "../Report/DiskPerformance/2021-05-26/libaio-4k-write.iostat.write"
+	# aa=readFileAndMakeList(path)
+	# bb=[]
+	# for i in range(0,len(aa)):
+	# 	bb+=aa[i]
+	# print(bb)
 

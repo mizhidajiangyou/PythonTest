@@ -483,7 +483,7 @@ getMax(){
         ;;
     esac
 }
-
+# 生成实时IO
 iostatReport(){
     ioPath=${path}"iostat"
     count=${#block[*]}*${#rwway[*]}
@@ -623,6 +623,7 @@ else
 fi
 #参数3设定执行方式
 
+
 case $3 in
 1)
     echo "**all test**"
@@ -636,6 +637,7 @@ case $3 in
     iostatReport $1 $4
     barBuild bw
     barBuild iops
+    getTestInfo $1 $4
     ;;
 2)
     echo "**only Bar**"
@@ -675,13 +677,18 @@ case $3 in
     createFile
     iostatReport $1 $4
     ;;
+8)
+    echo "**only getdiskInfo**"
+    getTestList
+    createFile
+    getTestInfo $1 $4
+    ;;
 *)
     echo "error!no this type!"
-    echo "enter: 1--**all test** 2--**only Bar** 3--**only Max** 4--**only Fio** 5--**only Table** 6--**only All** 7--**only iostatReport"
+    echo "enter: 1--**all test** 2--**only Bar** 3--**only Max** 4--**only Fio** 5--**only Table** 6--**only All** 7--**only iostatReport** 8--**only diskInfo**"
     exit 0
     ;;
 esac
-
 
 cp fio-disk.sh.bak fio-disk.sh
 
