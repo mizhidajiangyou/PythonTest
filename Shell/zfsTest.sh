@@ -134,7 +134,7 @@ RAID6_TEST(){
     for i in {f..z}
     do
         DISK_LIST[${#DISK_LIST[*]}]=sd${i}
-        zpool create ${POOL_NAME} raidz ${DISK_LIST[*]} -f
+        zpool create ${POOL_NAME} raidz2 ${DISK_LIST[*]} -f
         DISK_KNOW=`echo ${#DISK_LIST[*]}-2|bc`
         ZPOOL_INFO ${DISK_KNOW}
         VOL_TEST ${DISK_KNOW}
@@ -233,14 +233,14 @@ RAID60_3DISK_TEST(){
     done
 }
 VOL_TEST(){
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
+    for ((iv=0;iv<${#BLOCK_LIST[*]};iv++))
 
     do
-        for ((j=0;j<${#VOL_SIZE_LIST[*]};j++))
+        for ((jv=0;jv<${#VOL_SIZE_LIST[*]};jv++))
         do
-            zfs create -b ${BLOCK_LIST[$i]} -o logbias=latency  -o redundant_metadata=most -o sync=always -V ${VOL_SIZE_LIST[$j]} ${POOL_NAME}/${VOLUME_NAME}
+            zfs create -b ${BLOCK_LIST[$iv]} -o logbias=latency  -o redundant_metadata=most -o sync=always -V ${VOL_SIZE_LIST[$jv]} ${POOL_NAME}/${VOLUME_NAME}
             sleep 3
-            ZVOL_INFO ${VOL_SIZE_LIST[$j]} ${BLOCK_LIST[$i]} ${VOL_SIZE_DES[$j]} ${1}
+            ZVOL_INFO ${VOL_SIZE_LIST[$jv]} ${BLOCK_LIST[$iv]} ${VOL_SIZE_DES[$jv]} ${1}
             zfs destroy ${POOL_NAME}/${VOLUME_NAME}  -f
             sleep 3
         done
@@ -249,9 +249,9 @@ VOL_TEST(){
 }
 
 POOL_TEST=(RAID0 RAID10 RAID5 RAID6 RAID50 RAID60)
-for ((i=0;i<${#POOL_TEST[*]};i++))
+for ((r=0;r<${#POOL_TEST[*]};r++))
 do
-    case ${POOL_TEST[$i]} in
+    case ${POOL_TEST[$r]} in
     RAID0)
         SAVE_FILE_NAME="pool_raid0"
         RAID0_TEST
