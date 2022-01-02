@@ -262,9 +262,13 @@ Shell/zfioPerformance.sh
 * 整合全部类型的fio脚本
 ### 异常处理
 
-* 现象：
+* 现象：fio读写提示：fio: failed allocating random map. If running a large number of jobs, try the 'norandommap' option or set 'softrandommap'. Or give a larger --alloc-size to fio.
+fio参数中增加：norandommap
 
-
+* 现象：运行matplotlib提示：matplotlib display text must have all code points < 128 or use Unicode strings
+追加`import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')`
 
 
 
