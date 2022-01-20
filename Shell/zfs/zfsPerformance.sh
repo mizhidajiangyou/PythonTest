@@ -1,4 +1,6 @@
 #!/bin/bash
+# 返回码
+    # 9 磁盘数量错误
 # 该脚本用于zfs，创建raid0/5/6/10后创建块设备读写测试性能（利用工具vdbench）
 ALL_DISK_LIST=(/dev/sdt /dev/sdu /dev/sdv /dev/sdw /dev/sdx /dev/sdy /dev/sds /dev/sdr)
 # 卷容量
@@ -25,8 +27,6 @@ RAID0_CREATE(){
     zpool create -f -o ashift=0 ${POOL_NAME} $1
     # 创建zvol,块大小为参数2，容量为500
     zfs create -b $2 -o logbias=latency  -o redundant_metadata=most -o sync=always -V 536870912000 ${POOL_NAME}/v1
-    sleep 1
-    zfs list
 }
 
 RAID5_CREATE(){
@@ -58,20 +58,77 @@ RAID10_CREATE(){
     zfs create -b $3 -o logbias=latency  -o redundant_metadata=most -o sync=always -V 536870912000 ${POOL_NAME}/v1
 }
 
+ZFS_SET(){
+    # 选择zfs属性
+    case $1 in
+    lz4)
+        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
+        ;;
+    check)
+        b=`zfs list|wc -l`;zfs list|sed -n "3,${b}p"|awk '{print $1}'|xargs zfs set checksum=off
+        ;;
+    lac)
+        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
+        b=`zfs list|wc -l`;zfs list|sed -n "3,${b}p"|awk '{print $1}'|xargs zfs set checksum=off
+        ;;
+    *)
+        echo "error!"
+        zpool destroy -f ${POOL_NAME}
+        exit 0
+        ;;
+    esac
+}
 ##### 待优化
 VDBENCH_ZD(){
     # 使用vdbench测试zd设备
     ${VD_PATH}vdbench -f ${RUN_PATH}/zd-1 -o ${RE_PATH}$1
 }
 
-### 1DISK
-TEST_RAID0_1_DISK(){
+# 使用给定个数测磁盘进行测试，磁盘个数为$1;模式为参数$2
+TEST_RAID0_X_DISK(){
+# 判断请求的磁盘个数是否满足
+if [ $1 -le ${#ALL_DISK_LIST[*]} ];then
+    echo use $1 disk to test!
+else
+    echo error!
+    exit 0
+fi
+for ((i=0;i<${#BLOCK_LIST[*]};i++))
+    do
+        # 选用第X块磁盘作为数据盘
+        RAID0_CREATE "${ALL_DISK_LIST[*]:0:$1}" "${BLOCK_LIST[$i]}"
+        # 选择zfs属性
+        ZFS_SET $2
+        # 使用vdbench测试
+        FILE_NAME="${prefix}$1_disk_raid0_${BLOCK_LIST[$i]}_1zvol_zd"
+        VDBENCH_ZD "${FILE_NAME}"
+        cd ${RE_PATH}${FILE_NAME}
+        ../report.sh-2 >> ../jl
+        zpool destroy -f ${POOL_NAME}
+    done
+}
+X
+TEST_RAID5_X_DISK(){
+    # 判断请求的磁盘个数是否满足
+    if [ $1 -le ${#ALL_DISK_LIST[*]} ];then
+        echo use $1 disk to test!
+        if [ $1 -lt 3 ];then
+            echo raid5 should use more than 3 disk!
+            exit 9
+        fi
+    else
+        echo error!
+        exit 9
+    fi
+
     for ((i=0;i<${#BLOCK_LIST[*]};i++))
     do
-        # 选用第一块磁盘作为数据盘
-        RAID0_CREATE "${ALL_DISK_LIST[0]}" "${BLOCK_LIST[$i]}"
+        # 选用X块磁盘作为数据盘
+        RAID5_CREATE "${ALL_DISK_LIST[*]:0:$1}" "${BLOCK_LIST[$i]}"
+        # 选择zfs属性
+        ZFS_SET $2
         # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid0_${BLOCK_LIST[$i]}_1zvol_zd"
+        FILE_NAME="${prefix}$1_disk_raid5_${BLOCK_LIST[$i]}_1zvol_zd"
         VDBENCH_ZD "${FILE_NAME}"
         cd ${RE_PATH}${FILE_NAME}
         ../report.sh-2 >> ../jl
@@ -79,15 +136,28 @@ TEST_RAID0_1_DISK(){
     done
 }
 
-TEST_RAID0_1_DISK_LZ4(){
+
+TEST_RAID6_X_DISK(){
+    # 判断请求的磁盘个数是否满足
+    if [ $1 -le ${#ALL_DISK_LIST[*]} ];then
+        echo use $1 disk to test!
+        if [ $1 -lt 4 ];then
+            echo raid6 should use more than 4 disk!
+            exit 9
+        fi
+    else
+        echo error!
+        exit 9
+    fi
+
     for ((i=0;i<${#BLOCK_LIST[*]};i++))
     do
-        # 选用第一块磁盘作为数据盘
-        RAID0_CREATE "${ALL_DISK_LIST[0]}" "${BLOCK_LIST[$i]}"
-        # 修改zfs属性
-        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
+        # 选用X块磁盘作为数据盘
+        RAID6_CREATE "${ALL_DISK_LIST[*]:0:$1}" "${BLOCK_LIST[$i]}"
+        # 选择zfs属性
+        ZFS_SET $2
         # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid0_${BLOCK_LIST[$i]}_1zvol_zd_lz4"
+        FILE_NAME="${prefix}$1_disk_raid6_${BLOCK_LIST[$i]}_1zvol_zd"
         VDBENCH_ZD "${FILE_NAME}"
         cd ${RE_PATH}${FILE_NAME}
         ../report.sh-2 >> ../jl
@@ -95,16 +165,28 @@ TEST_RAID0_1_DISK_LZ4(){
     done
 }
 
-TEST_RAID0_1_DISK_LZ4_NO_CHECK(){
+TEST_RAID10_X_DISK(){
+    # 判断请求的磁盘个数是否满足
+    if [ $1 -le ${#ALL_DISK_LIST[*]} ];then
+        echo use $1 disk to test!
+        if [ $1 -lt 2 ];then
+            echo raid10 should use more than 2 disk!
+            exit 9
+        fi
+    else
+        echo error!
+        exit 9
+    fi
+
+    DISK_NUM=`echo $1/2|bc`
     for ((i=0;i<${#BLOCK_LIST[*]};i++))
     do
-        # 选用第一块磁盘作为数据盘
-        RAID0_CREATE "${ALL_DISK_LIST[0]}" "${BLOCK_LIST[$i]}"
-        # 修改zfs属性
-        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
-        b=`zfs list|wc -l`;zfs list|sed -n "3,${b}p"|awk '{print $1}'|xargs zfs set checksum=off
+        # 选用X块磁盘作为数据盘
+        RAID10_CREATE "${ALL_DISK_LIST[*]:0:$DISK_NUM}" "${ALL_DISK_LIST[*]: -$DISK_NUM}" "${BLOCK_LIST[$i]}"
+        # 选择zfs属性
+        ZFS_SET $2
         # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid0_${BLOCK_LIST[$i]}_1zvol_lz4_checksum_off"
+        FILE_NAME="${prefix}$1_disk_raid10_${BLOCK_LIST[$i]}_1zvol_zd"
         VDBENCH_ZD "${FILE_NAME}"
         cd ${RE_PATH}${FILE_NAME}
         ../report.sh-2 >> ../jl
@@ -112,165 +194,16 @@ TEST_RAID0_1_DISK_LZ4_NO_CHECK(){
     done
 }
 
-#### 6disk
 
-TEST_RAID5_6_DISK(){
+TEST_RAID10_X_DISK 6 "lz4"
+TEST_RAID10_X_DISK 6 "check"
+TEST_RAID10_X_DISK 6 "lac"
 
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用6块磁盘作为数据盘
-        RAID5_CREATE "${ALL_DISK_LIST[*]:0:6}" "${BLOCK_LIST[$i]}"
-        # 使用vdbench测试
-        FILE_NAME="${prefix}6_disk_raid5_${BLOCK_LIST[$i]}_1zvol_zd"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
+TEST_RAID5_X_DISK 6 "lz4"
+TEST_RAID5_X_DISK 6 "check"
+TEST_RAID5_X_DISK 6 "lac"
 
-TEST_RAID5_6_DISK_LZ4(){
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用第一块磁盘作为数据盘
-        RAID5_CREATE "${ALL_DISK_LIST[*]:0:6}" "${BLOCK_LIST[$i]}"
-        # 修改zfs属性
-        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
-        # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid5_${BLOCK_LIST[$i]}_1zvol_zd_lz4"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
-
-TEST_RAID5_6_DISK_LZ4_NO_CHECK(){
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用第一块磁盘作为数据盘
-        RAID5_CREATE "${ALL_DISK_LIST[*]:0:6}" "${BLOCK_LIST[$i]}"
-        # 修改zfs属性
-        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
-        b=`zfs list|wc -l`;zfs list|sed -n "3,${b}p"|awk '{print $1}'|xargs zfs set checksum=off
-        # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid5_${BLOCK_LIST[$i]}_1zvol_lz4_checksum_off"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
-
-TEST_RAID6_6_DISK(){
-
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用6块磁盘作为数据盘
-        RAID6_CREATE "${ALL_DISK_LIST[*]:0:6}" "${BLOCK_LIST[$i]}"
-        # 使用vdbench测试
-        FILE_NAME="${prefix}6_disk_raid6_${BLOCK_LIST[$i]}_1zvol_zd"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
-
-TEST_RAID6_6_DISK_LZ4(){
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用第一块磁盘作为数据盘
-        RAID6_CREATE "${ALL_DISK_LIST[*]:0:6}" "${BLOCK_LIST[$i]}"
-        # 修改zfs属性
-        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
-        # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid6_${BLOCK_LIST[$i]}_1zvol_zd_lz4"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
-
-TEST_RAID6_6_DISK_LZ4_NO_CHECK(){
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用第一块磁盘作为数据盘
-        RAID6_CREATE "${ALL_DISK_LIST[*]:0:6}" "${BLOCK_LIST[$i]}"
-        # 修改zfs属性
-        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
-        b=`zfs list|wc -l`;zfs list|sed -n "3,${b}p"|awk '{print $1}'|xargs zfs set checksum=off
-        # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid6_${BLOCK_LIST[$i]}_1zvol_lz4_checksum_off"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
-
-TEST_RAID10_6_DISK(){
-
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用6块磁盘作为数据盘
-        RAID10_CREATE "${ALL_DISK_LIST[*]:0:3}" "${ALL_DISK_LIST[*]: -3}" "${BLOCK_LIST[$i]}"
-        # 使用vdbench测试
-        FILE_NAME="${prefix}6_disk_raid10_${BLOCK_LIST[$i]}_1zvol_zd"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
-
-TEST_RAID10_6_DISK_LZ4(){
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用第一块磁盘作为数据盘
-        RAID10_CREATE "${ALL_DISK_LIST[*]:0:3}" "${ALL_DISK_LIST[*]: -3}" "${BLOCK_LIST[$i]}"
-        # 修改zfs属性
-        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
-        # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid10_${BLOCK_LIST[$i]}_1zvol_zd_lz4"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
-
-TEST_RAID10_6_DISK_LZ4_NO_CHECK(){
-    for ((i=0;i<${#BLOCK_LIST[*]};i++))
-    do
-        # 选用第一块磁盘作为数据盘
-        RAID10_CREATE "${ALL_DISK_LIST[*]:0:3}" "${ALL_DISK_LIST[*]: -3}" "${BLOCK_LIST[$i]}"
-        # 修改zfs属性
-        a=`zfs list|wc -l`;zfs list|sed -n "3,${a}p"|awk '{print $1}'|xargs zfs set compression=lz4
-        b=`zfs list|wc -l`;zfs list|sed -n "3,${b}p"|awk '{print $1}'|xargs zfs set checksum=off
-        # 使用vdbench测试
-        FILE_NAME="${prefix}1_disk_raid10_${BLOCK_LIST[$i]}_1zvol_lz4_checksum_off"
-        VDBENCH_ZD "${FILE_NAME}"
-        cd ${RE_PATH}${FILE_NAME}
-        ../report.sh-2 >> ../jl
-        zpool destroy -f ${POOL_NAME}
-    done
-}
-
-TEST_RAID10_6_DISK
-TEST_RAID10_6_DISK_LZ4
-TEST_RAID10_6_DISK_LZ4_NO_CHECK
-
-TEST_RAID5_6_DISK
-TEST_RAID5_6_DISK_LZ4
-TEST_RAID5_6_DISK_LZ4_NO_CHECK
-
-TEST_RAID6_6_DISK
-TEST_RAID6_6_DISK_LZ4
-TEST_RAID6_6_DISK_LZ4_NO_CHECK
-
-TEST_RAID0_1_DISK_LZ4_NO_CHECK
-TEST_RAID0_1_DISK_LZ4
-TEST_RAID0_1_DISK
+TEST_RAID6_X_DISK 6 "lz4"
+TEST_RAID6_X_DISK 6 "check"
+TEST_RAID6_X_DISK 6 "lac"
 
