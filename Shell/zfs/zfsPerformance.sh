@@ -88,9 +88,7 @@ ZFS_SET(){
         b=`zfs list|wc -l`;zfs list|sed -n "3,${b}p"|awk '{print $1}'|xargs zfs set checksum=off
         ;;
     *)
-        echo "error!"
-        zpool destroy -f ${POOL_NAME}
-        exit 0
+        echo "not set anything!"
         ;;
     esac
 }
@@ -205,14 +203,12 @@ TEST_RAID10_X_DISK(){
     do
         # 选用X块磁盘作为数据盘
         RAID10_CREATE "${ALL_DISK_LIST[*]:0:$DISK_NUM}" "${ALL_DISK_LIST[*]: -$DISK_NUM}" "${BLOCK_LIST[$i]}"
-        echo $i
         # 选择zpool
         ZPOOL_SET $3
         # 选择zfs属性
         ZFS_SET $2
         # 使用vdbench测试
         FILE_NAME="${prefix}$1_disk_raid10$3_${BLOCK_LIST[$i]}_1zvol_$2"
-        echo "======================$FILE_NAME"
         VDBENCH_ZD "${FILE_NAME}"
         cd ${RE_PATH}${FILE_NAME}
         ../report.sh-2 >> ../jl
@@ -221,19 +217,27 @@ TEST_RAID10_X_DISK(){
 }
 
 
+TEST_RAID10_X_DISK 6 "zd" "log"
 TEST_RAID10_X_DISK 6 "lz4" "log"
 TEST_RAID10_X_DISK 6 "check" "log"
 TEST_RAID10_X_DISK 6 "lac" "log"
-
+TEST_RAID5_X_DISK 6 "zd" "log"
 TEST_RAID5_X_DISK 6 "lz4" "log"
 TEST_RAID5_X_DISK 6 "check" "log"
 TEST_RAID5_X_DISK 6 "lac" "log"
-
+TEST_RAID6_X_DISK 6 "zd" "log"
 TEST_RAID6_X_DISK 6 "lz4" "log"
 TEST_RAID6_X_DISK 6 "check" "log"
 TEST_RAID6_X_DISK 6 "lac" "log"
-
-TEST_RAID0_X_DISK 1 "lz4" "log"
-TEST_RAID0_X_DISK 1 "check" "log"
-TEST_RAID0_X_DISK 1 "lac" "log"
-
+TEST_RAID10_X_DISK 12 "zd" "log"
+TEST_RAID10_X_DISK 12 "lz4" "log"
+TEST_RAID10_X_DISK 12 "check" "log"
+TEST_RAID10_X_DISK 12 "lac" "log"
+TEST_RAID5_X_DISK 12 "zd" "log"
+TEST_RAID5_X_DISK 12 "lz4" "log"
+TEST_RAID5_X_DISK 12 "check" "log"
+TEST_RAID5_X_DISK 12 "lac" "log"
+TEST_RAID6_X_DISK 12 "zd" "log"
+TEST_RAID6_X_DISK 12 "lz4" "log"
+TEST_RAID6_X_DISK 12 "check" "log"
+TEST_RAID6_X_DISK 12 "lac" "log"
