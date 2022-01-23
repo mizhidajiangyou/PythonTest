@@ -50,9 +50,9 @@ RAID10_CREATE(){
     DISK_LIST=($1)
     DISK_LIST_MIRROR=($2)
     COMMOND_DISK=""
-    for ((i=0;i<${#DISK_LIST[*]};i++))
+    for ((j=0;j<${#DISK_LIST[*]};j++))
     do
-        COMMOND_DISK=${COMMOND_DISK}"mirror ${DISK_LIST[$i]} ${DISK_LIST_MIRROR[$i]} "
+        COMMOND_DISK=${COMMOND_DISK}"mirror ${DISK_LIST[$j]} ${DISK_LIST_MIRROR[$j]} "
     done
     # 创建raid10
     zpool create -f -o ashift=0 ${POOL_NAME} ${COMMOND_DISK}
@@ -118,7 +118,7 @@ for ((i=0;i<${#BLOCK_LIST[*]};i++))
         # 选择zfs属性
         ZFS_SET $2
         # 使用vdbench测试
-        FILE_NAME="${prefix}$1_disk_raid0_${BLOCK_LIST[$i]}_1zvol_zd"
+        FILE_NAME="${prefix}$1_disk_raid0$3_${BLOCK_LIST[$i]}_1zvol_$2"
         VDBENCH_ZD "${FILE_NAME}"
         cd ${RE_PATH}${FILE_NAME}
         ../report.sh-2 >> ../jl
@@ -148,7 +148,7 @@ TEST_RAID5_X_DISK(){
         # 选择zfs属性
         ZFS_SET $2
         # 使用vdbench测试
-        FILE_NAME="${prefix}$1_disk_raid5_${BLOCK_LIST[$i]}_1zvol_zd"
+        FILE_NAME="${prefix}$1_disk_raid5$3_${BLOCK_LIST[$i]}_1zvol_$2"
         VDBENCH_ZD "${FILE_NAME}"
         cd ${RE_PATH}${FILE_NAME}
         ../report.sh-2 >> ../jl
@@ -179,7 +179,7 @@ TEST_RAID6_X_DISK(){
         # 选择zfs属性
         ZFS_SET $2
         # 使用vdbench测试
-        FILE_NAME="${prefix}$1_disk_raid6_${BLOCK_LIST[$i]}_1zvol_zd"
+        FILE_NAME="${prefix}$1_disk_raid6$3_${BLOCK_LIST[$i]}_1zvol_$2"
         VDBENCH_ZD "${FILE_NAME}"
         cd ${RE_PATH}${FILE_NAME}
         ../report.sh-2 >> ../jl
@@ -205,12 +205,14 @@ TEST_RAID10_X_DISK(){
     do
         # 选用X块磁盘作为数据盘
         RAID10_CREATE "${ALL_DISK_LIST[*]:0:$DISK_NUM}" "${ALL_DISK_LIST[*]: -$DISK_NUM}" "${BLOCK_LIST[$i]}"
+        echo $i
         # 选择zpool
         ZPOOL_SET $3
         # 选择zfs属性
         ZFS_SET $2
         # 使用vdbench测试
-        FILE_NAME="${prefix}$1_disk_raid10_${BLOCK_LIST[$i]}_1zvol_zd"
+        FILE_NAME="${prefix}$1_disk_raid10$3_${BLOCK_LIST[$i]}_1zvol_$2"
+        echo "======================$FILE_NAME"
         VDBENCH_ZD "${FILE_NAME}"
         cd ${RE_PATH}${FILE_NAME}
         ../report.sh-2 >> ../jl
