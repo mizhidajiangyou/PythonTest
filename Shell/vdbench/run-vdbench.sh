@@ -1,14 +1,18 @@
 #!/bin/bash
-# 卷大小
-V_SI="500G"
+
 # 判断参数
-if [ z$* == z ]
+if [ z$* != z ]
 then
-    printf "%s\n%s\n\t%s\n\t%s\n\t%s\n\t%s\n" "error! no parameter!" "usage:" "mode(1/2/3)" "title" "type" "size"
-elif [ $# -ne 4 ]
-then
-    printf "%s\n\t%s\n\t%s\n\t%s\n\t%s\n" "usage:" "mode(1/2/3)" "title" "type" "size"
+    if [ $# -eq 4 ]
+    then
+        printf "%s\n" "all good!"
+    fi
+else
+    printf "%s\n%s\n\t%s\n\t%s\n\t%s\n\t%s\n" "usage:" "mode(1/2/3)" "title" "type" "size"
+    exit 0
 fi
+# 卷大小
+V_SI="${4}G"
 # 路径配置
 FILE_DATE=`date '+%y%m%d'`
 mkdir -p /var/log/z
@@ -89,8 +93,7 @@ done
 }
 
 # run.vdb
-
-
+setRun(){
 # 获取盘符
 case ${1:0:1} in
 
@@ -98,13 +101,13 @@ m)
     printf "%s\n" "include=host.vdb" > /root/vdbench/run.vdb
     diskList=(`multipath -ll |grep -B2 $V_SI|grep DubheFlash|awk '{print $1}'`)
     diskNum=0
-    for i in ${diskList[*]};do echo sd=sd$diskNum,hd=hd1,lun=/dev/mapper/$i,openflags=o_direct;let diskNum++;done
+
+    for i in ${diskList[*]};do echo "sd=sd$diskNum,hd=${clientName[0]},lun=/dev/mapper/$i,openflags=o_direct" >> /root/vdbench/run.vdb ;let diskNum++;done
     ;;
 *)
     echo "error! no matching!"
     ;;
 esac
-
 # 生成测试项
 printf "%s\n" "wd=wd1,sd=sd*,xfersize=512,rdpct=100,seekpct=0
 wd=wd2,sd=sd*,xfersize=512,rdpct=0,seekpct=0
@@ -122,10 +125,19 @@ rd=rd5,wd=wd5,warmup=30,iorate=max,elapsed=300,interval=10,threads=32
 rd=rd6,wd=wd6,warmup=30,iorate=max,elapsed=300,interval=10,threads=32
 rd=rd7,wd=wd7,warmup=30,iorate=max,elapsed=300,interval=10,threads=32
 rd=rd8,wd=wd8,warmup=30,iorate=max,elapsed=300,interval=10,threads=32
-" > /root/vdbench/run.vdb
+" >> /root/vdbench/run.vdb
+
+}
 
 
+
+envInpect
+makeClient
+setHost
+setRun $3
 
 # 执行vdbench脚本
-
+/root/vdbench/vdbench -f run.vdb -o $2
 # 生成报告
+
+
