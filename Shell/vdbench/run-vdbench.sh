@@ -1,16 +1,4 @@
 #!/bin/bash
-
-# 判断参数
-if [ z$* != z ]
-then
-    if [ $# -eq 4 ]
-    then
-        printf "%s\n" "all good!"
-    fi
-else
-    printf "%s\n%s\n\t%s\n\t%s\n\t%s\n\t%s\n" "usage:" "mode(1/2/3)" "title" "type" "size"
-    exit 0
-fi
 # 卷大小
 V_SI="${4}G"
 # 路径配置
@@ -25,6 +13,39 @@ clientName=()
 diskList=()
 # 测试文件系统列表
 fileList=()
+
+Z1=
+Z2=
+
+# 用法说明
+usage(){
+    echo -e "\033[1musage: auto-runvdbench [ --help]
+
+    <mode>
+    <title>
+    <type>
+    <size>
+    [do]
+    xx      <>      xxxxx
+
+    e.g.
+    --xx xxxxx
+
+    ...\033[0m"
+
+    exit 1
+
+}
+
+# 参数校验
+check(){
+    if [ "${z1}" = "" ]
+    then
+        echo
+        usage
+    fi
+
+}
 
 # 环境配置
 envInpect(){
@@ -139,5 +160,43 @@ setRun $3
 # 执行vdbench脚本
 /root/vdbench/vdbench -f run.vdb -o $2
 # 生成报告
+getRep(){
+
+a=`cat totals.html|grep avg|wc -l`
+for((i=1;i<=${a};i++))
+do
+all=(`cat totals.html|grep avg|sed -n "${i},1p"`)
+#echo ${all}
+iops=${all[2]}
+bs=${all[3]}
+block=${all[4]}
+time=${all[6]}
+printf "%s%s%s\n" "block-${block}-" "iops/time-${iops}/${time}-" "bs-${bs}"
+done
+}
+
+
+## mian
+LINE=`getopt -o a --long help,z1:,z2: -n 'Invalid parameter' -- "$@"`
+
+if [ $? != 0 ] ; then usage; exit 1 ; fi
+
+eval set -- "$LINE"
+
+while true;do
+    case "$1" in
+    --help)
+    usage; shift 2;;
+    --z1)
+    z1=$2; shift 2;;
+    --)
+    shift;break;;
+    *)
+    break;;
+    esac
+done
+
+
+
 
 
