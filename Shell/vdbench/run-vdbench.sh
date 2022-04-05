@@ -150,8 +150,6 @@ rd=rd8,wd=wd8,warmup=30,iorate=max,elapsed=300,interval=10,threads=32
 
 }
 
-
-
 envInpect
 makeClient
 setHost
