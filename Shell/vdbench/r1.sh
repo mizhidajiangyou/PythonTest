@@ -1,5 +1,7 @@
 #!/bin/bash
-# 该脚本用于生成单/多主机的vdbench测试文件，运行前请确保ssh-nosecret.sh脚本或已经配置免密。
+# 该脚本用于生成单/多主机利用vdbench测试性能
+# 脚本模式
+MODEL=2
 # 测试类型
 VD_TYPE="FC"
 # 测试设备总大小（G）
@@ -29,7 +31,7 @@ FILEIO=(random sequential)
 # 文件选择方式
 FILESELECT=(random sequential)
 # IP
-IP_LIST=(192.168.16.231 192.168.16.232)
+IP_LIST=(`ip a | grep "state UP" -A 3 |awk '$2~/^[0-9]*\./ {print $2}' |awk -F "/" 'NR==1 {print $1}'`)
 # 日期
 FILE_DATE=`date '+%y%m%d'`
 # 脚本地址
@@ -37,11 +39,11 @@ VD_FILE="`pwd`"
 # VDBENCH目录
 VD_HOME="/root/vdbench/"
 # 报告目录
-VD_OUT="/root/vdbench/vd-output"
+VD_OUT="$VD_FILE/vd-output"
 # 日志存放目录
-VD_LOG="/var/log/vdbench/"
+VD_LOG="$VD_FILE/log/"
 # 日志重定向文件
-LOG_FILE="/var/log/vdbench/vd$FILE_DATE.log"
+LOG_FILE="$VD_FILE/log/vd$FILE_DATE.log"
 # 测试项
 ALL_TEST_LIST=()
 # 测试名
@@ -50,8 +52,9 @@ ALL_TEST_LIST_TITLE=()
 usage(){
     echo -e "\033[1musage: vdbench.sh [ --help]
 
-    <--type| --ip>
+    <--model| --type| --ip>
     [--size| --rdpct| --block| --fileio| --seekpct| --runtime| --file| --out] \n
+    model     <1|2|3>             1-all 2-vdbench and result 3-only vdbench
     type      <fc|iscsi|nfs>      whether which volume type you test
     ip        <\"ipaddress\">       all ip list which you want to test
     file      <\"vdb file pwd\">    *.vbd will put in
@@ -111,7 +114,7 @@ getTestListB(){
         done
     done
 
-echo ${ALL_TEST_LIST[*]}
+    printf "%s\n" "testBlist:${ALL_TEST_LIST[*]}" >> ${LOG_FILE}
 }
 
 getTestListF(){
@@ -133,7 +136,7 @@ getTestListF(){
         done
     done
 
-echo ${ALL_TEST_LIST[*]}
+    printf "%s\n" "testFlist:${ALL_TEST_LIST[*]}" >> ${LOG_FILE}
 }
 
 getwd(){
@@ -143,7 +146,7 @@ getwd(){
         WD_LIST[$i]="wd=wd$i,sd=sd*,${ALL_TEST_LIST[$i]}"
     done
 
-echo ${WD_LIST[*]}
+    printf "%s\n" "wdlist:${WD_LIST[*]}" >> ${LOG_FILE}
 }
 
 
@@ -161,7 +164,7 @@ getsd(){
            SD_LIST[${#SD_LIST[*]}]="sd=sd$count,hd=hd$i,lun=/dev/mapper/${DN[$j]}"
         done
     done
- echo ${SD_LIST[*]}
+    printf "%s\n" "sdlist:${SD_LIST[*]}">> ${LOG_FILE}
 }
 
 
@@ -171,7 +174,7 @@ getrd(){
     do
         RD_LIST[$i]="rd=rd$i,wd=wd$i,threads=$THREADS,iorate=max,elapsed=$ELAPSED,interval=$INTERVAL,warmup=$WARMUP,pause=$PAUSE"
     done
- echo ${RD_LIST[*]}
+    printf "%s\n" "rdlist:${RD_LIST[*]}" >> ${LOG_FILE}
 }
 
 
@@ -198,9 +201,24 @@ setTerm(){
     printf "%s\n%s\n" "include=host.vdb" "include=volume.vdb" > ${VD_FILE}/run.vdb
     for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
     do
-        printf "%s\n%s\n" ${WD_LIST[$i]} ${RD_LIST[$i]} >> ${VD_FILE}/run.vdb
+        #printf "%s\n%s\n" ${WD_LIST[$i]} ${RD_LIST[$i]} >> ${VD_FILE}/run.vdb
+        printf "%s\n" ${WD_LIST[$i]}  >> ${VD_FILE}/run.vdb
+    done
+    for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
+    do
+        printf "%s\n"  ${RD_LIST[$i]} >> ${VD_FILE}/run.vdb
     done
 }
+
+runVdb(){
+    nohup $VD_HOME/vdbench -f ${VD_FILE}/run.vdb -o $VD_OUT >> $VD_LOG/run.vdb.$FILE_DATE 2>&1 &
+    if [ $? -eq 0 ];then
+        printf "\033[32m%s\033[0m\n%s\n" "successful run vdb" "PID:$!" >> ${LOG_FILE}
+    else
+        printf "\033[31m%s\033[0m\n%s\n" "error!" "PID:$!" >> ${LOG_FILE}
+    fi
+}
+
 
 vd-main(){
     getsd
@@ -212,6 +230,7 @@ vd-main(){
     setHost
     setVol
     setTerm
+    runVdb
 }
 
 
@@ -245,4 +264,12 @@ while true;do
     esac
 done
 
-vd-main
+
+
+case $MODEL in
+
+2)
+    vd-main ;;
+*)
+    echo "aaa" ;;
+esac

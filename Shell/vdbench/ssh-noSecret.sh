@@ -110,7 +110,7 @@ run-no(){
     do
        getPub ${i}
     done
-    echo `cat /root/.ssh/id_rsa.pub` >> /root/.ssh/authorized_keys
+    # echo `cat /root/.ssh/id_rsa.pub` >> /root/.ssh/authorized_keys
     for i in ${IP_LIST[*]}
     do
        sendPub ${i}
