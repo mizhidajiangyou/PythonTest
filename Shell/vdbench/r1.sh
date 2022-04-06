@@ -92,6 +92,7 @@ checkVal(){
         exit 1
     fi
 
+
     # 检测IP是否可用
 
 }
@@ -164,7 +165,7 @@ getsd(){
            SD_LIST[${#SD_LIST[*]}]="sd=sd$count,hd=hd$i,lun=/dev/mapper/${DN[$j]}"
         done
     done
-    printf "%s\n" "sdlist:${SD_LIST[*]}">> ${LOG_FILE}
+    printf "%s\n" "sdlist:${SD_LIST[*]}" >> ${LOG_FILE}
 }
 
 
@@ -198,7 +199,7 @@ done
 
 # run.vdb
 setTerm(){
-    printf "%s\n%s\n" "include=host.vdb" "include=volume.vdb" > ${VD_FILE}/run.vdb
+    printf "%s\n%s\n%s\n" "messagescan=no" "include=host.vdb" "include=volume.vdb" > ${VD_FILE}/run.vdb
     for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
     do
         #printf "%s\n%s\n" ${WD_LIST[$i]} ${RD_LIST[$i]} >> ${VD_FILE}/run.vdb
@@ -219,6 +220,22 @@ runVdb(){
     fi
 }
 
+getData(){
+    for ((i=0;i<${#ALL_TEST_LIST_TITLE[*]};i++))
+    do
+        data_name="$VD_OUT/${ALL_TEST_LIST_TITLE[$i]}"
+        f_n=`echo $ONE_RD_COUNT*$i+1|bc`
+        l_n=`echo $ONE_RD_COUNT*$i+$ONE_RD_COUNT|bc`
+        awk '$3~/^[0-9]*\./{print $3}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.iops
+        awk '$3~/^[0-9]*\./{print $4}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.bs
+    done
+    awk '$3~/^[0-9]*\./{printf "%s\n","block:"$5"--iops:"$3"--bs:"$4"--resp:"$7}' $VD_OUT/totals.html  > $VD_OUT/total.sin
+}
+
+makePic(){
+    a=1
+}
+
 
 vd-main(){
     getsd
@@ -231,6 +248,7 @@ vd-main(){
     setVol
     setTerm
     runVdb
+    getData
 }
 
 
