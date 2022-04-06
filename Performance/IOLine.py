@@ -9,7 +9,7 @@ from Common.makeCharts import zChart
 
 if __name__ == "__main__":
 	x = ["随机写", "随机读", "读", "写"]
-	title = "LINE_TITLE" + ".mb"
+	title = "LINE_TITLE" + ".bs"
 	savePath = "SAVE_PATH"
 	op = savePath + title
 	on = "volume"

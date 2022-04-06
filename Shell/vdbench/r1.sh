@@ -39,7 +39,7 @@ VD_FILE="`pwd`"
 # VDBENCH目录
 VD_HOME="/root/vdbench/"
 # 报告目录
-VD_OUT="$VD_FILE/vd-output"
+VD_OUT="$VD_FILE/vd-output/"
 # 日志存放目录
 VD_LOG="$VD_FILE/log/"
 # 日志重定向文件
@@ -212,15 +212,16 @@ setTerm(){
 }
 
 runVdb(){
-    nohup $VD_HOME/vdbench -f ${VD_FILE}/run.vdb -o $VD_OUT >> $VD_LOG/run.vdb.$FILE_DATE 2>&1 &
-    if [ $? -eq 0 ];then
-        printf "\033[32m%s\033[0m\n%s\n" "successful run vdb" "PID:$!" >> ${LOG_FILE}
-    else
-        printf "\033[31m%s\033[0m\n%s\n" "error!" "PID:$!" >> ${LOG_FILE}
-    fi
+#    nohup $VD_HOME/vdbench -f ${VD_FILE}/run.vdb -o $VD_OUT >> $VD_LOG/run.vdb.$FILE_DATE 2>&1 &
+#    if [ $? -eq 0 ];then
+#        printf "\033[32m%s\033[0m\n%s\n" "successful run vdb" "PID:$!" >> ${LOG_FILE}
+#    else
+#        printf "\033[31m%s\033[0m\n%s\n" "error!" "PID:$!" >> ${LOG_FILE}
+#    fi
+    $VD_HOME/vdbench -f ${VD_FILE}/run.vdb -o $VD_OUT
 }
 
-getData(){
+getDataMakePic(){
     for ((i=0;i<${#ALL_TEST_LIST_TITLE[*]};i++))
     do
         data_name="$VD_OUT/${ALL_TEST_LIST_TITLE[$i]}"
@@ -228,13 +229,14 @@ getData(){
         l_n=`echo $ONE_RD_COUNT*$i+$ONE_RD_COUNT|bc`
         awk '$3~/^[0-9]*\./{print $3}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.iops
         awk '$3~/^[0-9]*\./{print $4}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.bs
+        cp IOLine.py-bak IOLine.py
+        sed -i "s!LINE_TITLE!${ALL_TEST_LIST_TITLE[$i]}!g" IOLine.py
+        sed -i "s!SAVE_PATH!$VD_OUT!g" IOLine.py
+        python3  IOLine.py
     done
     awk '$3~/^[0-9]*\./{printf "%s\n","block:"$5"--iops:"$3"--bs:"$4"--resp:"$7}' $VD_OUT/totals.html  > $VD_OUT/total.sin
 }
 
-makePic(){
-    a=1
-}
 
 
 vd-main(){
@@ -248,7 +250,7 @@ vd-main(){
     setVol
     setTerm
     runVdb
-    getData
+    getDataMakePic
 }
 
 
