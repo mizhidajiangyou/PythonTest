@@ -129,7 +129,6 @@ makeClient(){
         echo $i
     done
 }
-
 makeHosts(){
     printf  "%s\n%s\n"  "127.0.0.1    localhost localhost.localdomain " "::1    localhost localhost.localdomain" >  /etc/hosts
 
@@ -139,8 +138,6 @@ makeHosts(){
         echo "$hostInfo" >> /etc/hosts
     done
 }
-
-
 # 免密
 getPub(){
 
@@ -207,6 +204,11 @@ ip_main(){
 # 检查变量正确性
 checkVal(){
 
+    # 参数正确性
+    if [ $VD_TYPE != "fc" -o $VD_TYPE != "iscsi" -o $VD_TYPE != "nfs" -o $VD_TYPE != "cifs" ];then
+        usage
+    fi
+
     # 检测脚本存放目录
     if [ -d $VD_FILE ]
     then
@@ -234,6 +236,8 @@ checkVal(){
         exit 1
     fi
 
+
+
     # 检测java
 
     if [  `ls /bin | grep -w java |wc -l` -eq 0 ]
@@ -251,7 +255,6 @@ checkVal(){
 
     #
 }
-
 
 getTestListB(){
     for i in ${BLOCK[*]}
@@ -305,19 +308,30 @@ getwd(){
     printf "%s\n" "wdlist:${WD_LIST[*]}" >> ${LOG_FILE}
 }
 
+getCommand(){
+    case $VD_TYPE in
+    fc)
+        COMMAND="multipath -ll |grep -B2 $V_SI|grep DubheFlash|awk '{printf \"/dev/mapper/%s\n\",\$1}'";;
 
+    iscsi)
+        COMMAND="lsblk -o NAME,SIZE,VENDOR,MODEL,TRAN|grep iscsi |grep -B2 $V_SI|grep DubheFlash|awk '{printf \"/dev/%s\n\",\$1}'";;
+    *)
+        exit 0;;
+    esac
+}
 
 getsd(){
     SD_LIST=()
-
     for ((i=0;i<${#IP_LIST[*]};i++))
     do
-        commd="multipath -ll |grep -B2 $V_SI|grep $BRAND|awk '{print \$1}'"
-        DN=(`ssh ${IP_LIST[$i]} "$commd"`)
+
+        DN=(`ssh ${IP_LIST[$i]} "$COMMAND"`)
         for ((j=0;j<${#DN[*]};j++))
         do
            count=`echo $i*${#DN[*]}+$j |bc`
-           SD_LIST[${#SD_LIST[*]}]="sd=sd$count,hd=hd$i,lun=/dev/mapper/${DN[$j]}"
+
+           SD_LIST[${#SD_LIST[*]}]="sd=sd$count,hd=hd$i,lun=${DN[$j]}"
+
         done
     done
     printf "%s\n" "sdlist:${SD_LIST[*]}" >> ${LOG_FILE}
@@ -425,21 +439,31 @@ vd-normal(){
 
 
 ## main ##
-
-if [ x$1 == x ];then
-    read -p "you wile use default mode! please enter yes to continue! " USE_DEFAULT
-    if [ $USE_DEFAULT == "yes" -o $USE_DEFAULT == "y" ]
-    then
-        echo "run in default"
+# 检测参数正确性
+    if [ x$1 == x ];then
+        read -p "you wile use default mode! enter yes to continue or no see usage! " USE_DEFAULT
+        if [ $USE_DEFAULT == "yes" -o $USE_DEFAULT == "y" ]
+        then
+            echo "run in default"
+        else
+            usage
+            echo "don't run!"
+            exit 0
+        fi
     else
-        echo "don't run!"
-        exit 0
+        echo "continue"
     fi
-elif [ $1 == "default" ];then
-    echo "run in default"
-else
-    echo "use free mode!"
-fi
+#    # 检测参数正确性
+#    if [ $1x != x ];then
+#        if [ $1 == "default" ];then
+#            echo "run in default" >> ${LOG_FILE}
+#        else
+#            echo "Invalid parameter" >> ${LOG_FILE}
+#            usage
+#        fi
+#    else
+#        echo "run free model" >> ${LOG_FILE}
+#    fi
 
 LINE=`getopt -o a --long help,brand:,mode:,type:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date: -n 'Invalid parameter' -- "$@"`
 
@@ -495,7 +519,7 @@ while true;do
 done
 
 
-case $mode in
+case $MODE in
 1)
     ;;
 
@@ -504,7 +528,7 @@ case $mode in
     runVdb-nohup
     ;;
 *)
-    echo "aaa" ;;
+    echo "no this mode" ;exit 127;;
 esac
 
 
