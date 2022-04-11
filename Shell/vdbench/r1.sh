@@ -1,8 +1,10 @@
 #!/bin/bash
 # 使用脚本前，请确认防火墙状态
 # 该脚本用于生成单/多主机利用vdbench测试性能
+# 磁盘型号
+BRAND="SEAGATE"
 # 脚本模式
-MODEL=2
+MODE=2
 # 测试类型
 VD_TYPE="FC"
 # 测试设备总大小（G）
@@ -36,15 +38,15 @@ IP_LIST=(`ip a | grep "state UP" -A 3 |awk '$2~/^[0-9]*\./ {print $2}' |awk -F "
 # 日期
 FILE_DATE=`date '+%y%m%d'`
 # 脚本地址
-VD_FILE="`pwd`"
+VD_FILE="`pwd`/$FILE_DATE/"
 # VDBENCH目录
 VD_HOME="/root/vdbench/"
 # 报告目录
 VD_OUT="$VD_FILE/vd-output/"
 # 日志存放目录
-VD_LOG="$VD_FILE/log/"
+VD_LOG="$VD_FILE/"
 # 日志重定向文件
-LOG_FILE="$VD_FILE/log/vd$FILE_DATE.log"
+LOG_FILE="$VD_FILE/vd$FILE_DATE.log"
 # 测试项
 ALL_TEST_LIST=()
 # 测试名
@@ -57,16 +59,32 @@ MY_PASSWD=password
 usage(){
     echo -e "\033[1musage: vdbench.sh [ --help]
 
-    <--model| --type| --ip>
-    [--size| --rdpct| --block| --fileio| --seekpct| --runtime| --file| --out] \n
-    model     <1|2|3>             1-all 2-vdbench and result 3-only vdbench
-    type      <fc|iscsi|nfs>      whether which volume type you test
-    ip        <\"ipaddress\">       all ip list which you want to test
-    file      <\"vdb file pwd\">    *.vbd will put in
-    out       <\"output pwd\">      vdbench out put will put in
+    <--brand| --mode| --type| --ip> \n
+    [--size| --rdpct| --block| --fileio| --seekpct] \n
+    [--runtime| --interval| --warmup | --pause] \n
+    [--file| --out| --log| --date] \n
+    brand    <string>            disk manufacturer;default SEAGATE
+    mode     <1|2|3>             1-all 2-nohup vdbench 3-only pic;default 2
+    type      <fc|iscsi|nfs|cifs>      whether which volume type you test;default fc
+    ip        <\"ipaddress\">       all ip list which you want to test;default ssh ip
+    size      <int>               disk or file size;default 500
+    rdpct     <\"array\">           percentage of read ;default \"0 100\"
+    block     <\"array\">           test block size ;default \"4k 1M\"
+    fileio    <\"array\">           test fileio ;default \"random sequential\"
+    seekpct   <\"array\">           test random ratio ;default \"100 0\"
+    runtime   <int>               test runtime(s) ;default 300
+    interval  <int>               print interval(s) ;default 1
+    warmup    <int>               hot start time(s) ;default 30
+    pause     <int>               pause time(s) ;default 30
+    file      <\"path\">            *.vbd will put in;default pwd
+    out       <\"path\">            vdbench out put will put in;default pwd/vd-output
+    log       <\"path\">            run logs will put in;default same with file
+    date      <date>              date for test ,like 220101;default date '+%y%m%d'
+
+
 
     e.g.
-    --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/vdbench/aa\" --out \"/root/vdbench/outa\"
+    --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/vdbench/aa\" --out \"/root/vdbench/outa\"
 
     ...\033[0m"
 
@@ -189,6 +207,14 @@ ip_main(){
 # 检查变量正确性
 checkVal(){
 
+    # 检测脚本存放目录
+    if [ -d $VD_FILE ]
+    then
+        echo "*vdb will in $VD_FILE" >> ${LOG_FILE}
+    else
+        mkdir -p $VD_FILE
+        echo "mkdir file" >> ${LOG_FILE}
+    fi
 
     # 检测日志存放目录
     if [ -d $VD_LOG ]
@@ -286,7 +312,7 @@ getsd(){
 
     for ((i=0;i<${#IP_LIST[*]};i++))
     do
-        commd="multipath -ll |grep -B2 $V_SI|grep DubheFlash|awk '{print \$1}'"
+        commd="multipath -ll |grep -B2 $V_SI|grep $BRAND|awk '{print \$1}'"
         DN=(`ssh ${IP_LIST[$i]} "$commd"`)
         for ((j=0;j<${#DN[*]};j++))
         do
@@ -400,9 +426,22 @@ vd-normal(){
 
 ## main ##
 
-LINE=`getopt -o a --long help,type:,ip:,runtime:,file:,out: -n 'Invalid parameter' -- "$@"`
+if [ x$1 == x ];then
+    read -p "you wile use default mode! please enter yes to continue! " USE_DEFAULT
+    if [ $USE_DEFAULT == "yes" -o $USE_DEFAULT == "y" ]
+    then
+        echo "run in default"
+    else
+        echo "don't run!"
+        exit 0
+    fi
+elif [ $1 == "default" ];then
+    echo "run in default"
+else
+    echo "use free mode!"
+fi
 
-
+LINE=`getopt -o a --long help,brand:,mode:,type:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date: -n 'Invalid parameter' -- "$@"`
 
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
@@ -410,18 +449,44 @@ eval set -- "$LINE"
 
 while true;do
     case "$1" in
+    --h)
+    usage; shift 2;;
     --help)
     usage; shift 2;;
+    --brand)
+    BRAND=$2; shift 2;;
+    --mode)
+    VD_TYPE=$2; shift 2;;
     --type)
     VD_TYPE=$2; shift 2;;
     --ip)
     IP_LIST=($2); shift 2;;
+    --size)
+    V_SI=$2; shift 2;;
+    --rdpct)
+    RDPCT=($2); shift 2;;
+    --block)
+    BLOCK=($2); shift 2;;
+    --fileio)
+    FILEIO=($2); shift 2;;
+    --seekpct)
+    SEEK=($2); shift 2;;
     --runtime)
     ELAPSED=$2; shift 2;;
+    --interval)
+    INTERVAL=$2; shift 2;;
+    --warmup)
+    WARMUP=$2; shift 2;;
+    --pause)
+    PAUSE=$2; shift 2;;
     --file)
     VD_FILE=$2; shift 2;;
     --out)
     VD_OUT=$2; shift 2;;
+    --log)
+    VD_LOG=$2; shift 2;;
+    --date)
+    FILE_DATE=$2; shift 2;;
     --)
     shift;break;;
     *)
@@ -429,9 +494,8 @@ while true;do
     esac
 done
 
-echo ${IP_LIST[*]}
 
-case $MODEL in
+case $mode in
 1)
     ;;
 
