@@ -6,7 +6,7 @@ BRAND="SEAGATE"
 # 脚本模式
 MODE=2
 # 测试类型
-VD_TYPE="FC"
+VD_TYPE="fc"
 # 测试设备总大小（G）
 V_SI=500
 # 运行时间
@@ -204,9 +204,13 @@ ip_main(){
 # 检查变量正确性
 checkVal(){
 
-    # 参数正确性
-    if [ $VD_TYPE != "fc" -o $VD_TYPE != "iscsi" -o $VD_TYPE != "nfs" -o $VD_TYPE != "cifs" ];then
-        usage
+     # 检测日志存放目录
+    if [ -d $VD_LOG ]
+    then
+        echo "log file in $VD_LOG" >> ${LOG_FILE}
+    else
+        mkdir -p $VD_LOG
+        echo "mkdir log FILE" >> ${LOG_FILE}
     fi
 
     # 检测脚本存放目录
@@ -218,15 +222,6 @@ checkVal(){
         echo "mkdir file" >> ${LOG_FILE}
     fi
 
-    # 检测日志存放目录
-    if [ -d $VD_LOG ]
-    then
-        echo "log file in $VD_LOG" >> ${LOG_FILE}
-    else
-        mkdir -p $VD_LOG
-        echo "mkdir log FILE" >> ${LOG_FILE}
-    fi
-
     # 检测vdbench目录
     if [ -d $VD_HOME ]
     then
@@ -235,7 +230,13 @@ checkVal(){
         echo "no vdbench！" >> ${LOG_FILE}
         exit 1
     fi
-
+     # 参数正确性
+    if [ $VD_TYPE == "fc" -o $VD_TYPE == "iscsi" -o $VD_TYPE == "nfs" -o $VD_TYPE == "cifs" ];then
+        echo "know run type : $VD_TYPE" >> ${LOG_FILE}
+    else
+        echo "type : $VD_TYPE error! no match" >> ${LOG_FILE}
+        usage
+    fi
 
 
     # 检测java
@@ -368,7 +369,7 @@ done
 
 # run.vdb
 setTerm(){
-    printf "%s\n%s\n%s\n" "messagescan=no" "include=host.vdb" "include=volume.vdb" > ${VD_FILE}/run.vdb
+    printf "%s\n%s\n%s\n" "messagescan=no" "include=$VD_FILE/host.vdb" "include=$VD_FILE/volume.vdb" > ${VD_FILE}/run.vdb
     for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
     do
         #printf "%s\n%s\n" ${WD_LIST[$i]} ${RD_LIST[$i]} >> ${VD_FILE}/run.vdb
@@ -390,7 +391,6 @@ runVdb-nohup(){
 }
 
 runVdb(){
-
     $VD_HOME/vdbench -f ${VD_FILE}/run.vdb -o $VD_OUT
 }
 
@@ -414,19 +414,29 @@ getDataMakePic(){
 
 vd-createFile(){
     checkVal
-    getsd
+    echo "checkval ok" >> ${LOG_FILE}
     getTestListB
+    echo "getTestListB ok" >> ${LOG_FILE}
+    getCommand
+    echo "getCommand ok" >> ${LOG_FILE}
     getwd
+    echo "getwd ok" >> ${LOG_FILE}
     getrd
+    echo "getrd ok" >> ${LOG_FILE}
     getsd
+    echo "getsd ok" >> ${LOG_FILE}
     setHost
+    echo "setHost ok" >> ${LOG_FILE}
     setVol
+    echo "setVol ok" >> ${LOG_FILE}
     setTerm
+    echo "setTerm ok" >> ${LOG_FILE}
 }
 
 vd-normal(){
     checkVal
     getTestListB
+    getCommand
     getwd
     getrd
     getsd
@@ -525,6 +535,8 @@ case $MODE in
 
 2)
     vd-createFile
+    echo "create file ok!" >> ${LOG_FILE}
+    cat $VD_FILE/*.vdb
     runVdb-nohup
     ;;
 *)
