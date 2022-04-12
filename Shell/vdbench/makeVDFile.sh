@@ -1,5 +1,5 @@
 #!/bin/bash
-# 该脚本用于生成单/多主机的vdbench测试文件，运行前请确保vd-ini.sh脚本或已经配置免密。
+# 该脚本用于生成单/多主机的vdbench测试文件，运行前请确保ssh-nosecret.sh脚本或已经配置免密。
 # 测试类型
 VD_TYPE="FC"
 # 测试设备总大小（G）
@@ -10,10 +10,12 @@ ELAPSED=300
 WARMUP=30
 # 暂停时间
 PAUSE=30
-# 线程
-THREADS=32
 # 打印时间
 INTERVAL=1
+# 总行数
+ONE_RD_COUNT=`echo $ELAPSED/$INTERVAL+$WARMUP/$INTERVAL+1|bc`
+# 线程
+THREADS=32
 # 随机比例
 SEEK=(100 0)
 # 块大小
@@ -27,7 +29,7 @@ FILEIO=(random sequential)
 # 文件选择方式
 FILESELECT=(random sequential)
 # IP
-IP_LIST=("192.168.8.81")
+IP_LIST=(192.168.16.231 192.168.16.232)
 # 日期
 FILE_DATE=`date '+%y%m%d'`
 # 脚本地址
@@ -49,12 +51,14 @@ usage(){
     echo -e "\033[1musage: vdbench.sh [ --help]
 
     <--type| --ip>
-    [--size| --rdpct| --block| --fileio| --seekpct| --runtime] \n
+    [--size| --rdpct| --block| --fileio| --seekpct| --runtime| --file| --out] \n
     type      <fc|iscsi|nfs>      whether which volume type you test
     ip        <\"ipaddress\">       all ip list which you want to test
+    file      <\"vdb file pwd\">    *.vbd will put in
+    out       <\"output pwd\">      vdbench out put will put in
 
     e.g.
-    --type fc --ip \"192.168.8.81 192.168.8.82\"
+    --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/vdbench/aa\" --out \"/root/vdbench/outa\"
 
     ...\033[0m"
 
@@ -146,6 +150,7 @@ echo ${WD_LIST[*]}
 
 getsd(){
     SD_LIST=()
+
     for ((i=0;i<${#IP_LIST[*]};i++))
     do
         commd="multipath -ll |grep -B2 $V_SI|grep DubheFlash|awk '{print \$1}'"
@@ -211,7 +216,7 @@ vd-main(){
 
 
 
-LINE=`getopt -o a --long help,type:,ip:,runtime: -n 'Invalid parameter' -- "$@"`
+LINE=`getopt -o a --long help,type:,ip:,runtime:,file:,out: -n 'Invalid parameter' -- "$@"`
 
 
 
@@ -229,6 +234,10 @@ while true;do
     IP_LIST=($2); shift 2;;
     --runtime)
     ELAPSED=$2; shift 2;;
+    --file)
+    VD_FILE=$2; shift 2;;
+    --out)
+    VD_OUT=$2; shift 2;;
     --)
     shift;break;;
     *)

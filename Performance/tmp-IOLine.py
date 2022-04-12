@@ -9,16 +9,11 @@ from Common.makeCharts import zChart
 
 if __name__ == "__main__":
 	x = ["随机写", "随机读", "读", "写"]
-	title = "LINE_TITLE" + ".bs"
-	savePath = "SAVE_PATH"
+	title = "iolinetest"
+	savePath = "D:\\pythontest\\autoTest\\Report\\DiskPerformance\\2021-05-26\\"
 	op = savePath + title
 	on = "volume"
 	y = "MB/S"
 
 	IOLine = zChart(op, on, x, y, title, savePath)
-	IOLine.makeIostatLine()
-	title = "LINE_TITLE" + ".iops"
-	IOLine.title = title
-	IOLine.yAxis = "iops"
-	IOLine.oPath = savePath + title
 	IOLine.makeIostatLine()
