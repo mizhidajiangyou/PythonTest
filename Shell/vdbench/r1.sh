@@ -55,18 +55,27 @@ ALL_TEST_LIST_TITLE=()
 MY_IP=${IP_LIST[0]}
 # 密码
 MY_PASSWD=password
+# 测试本地磁盘列表
+LOCAL_DISK_LIST=()
 # 使用方法
 usage(){
     echo -e "\033[1musage: vdbench.sh [ --help]
 
     <--brand| --mode| --type| --ip> \n
+    (--Ldisk)
     [--size| --rdpct| --block| --fileio| --seekpct] \n
     [--runtime| --interval| --warmup | --pause] \n
     [--file| --out| --log| --date] \n
-    brand    <string>            disk manufacturer;default SEAGATE
-    mode     <1|2|3>             1-all 2-nohup vdbench 3-only pic;default 2
-    type      <fc|iscsi|nfs|cifs>      whether which volume type you test;default fc
-    ip        <\"ipaddress\">       all ip list which you want to test;default ssh ip
+    brand     <string>            disk manufacturer;default SEAGATE
+    mode      <1|2|3>             1-all 2-nohup vdbench 3-only pic;default 2
+    type      <string>            whether which volume type you test;default fc
+              *   fc              must install device-mapper-multipath(multipath-tools)
+              *   iscsi           must install iscsi
+              *   nfs             must install nfs-utils
+              *   cifs            default support
+              *   Ldisk           customized single/multi client local disk test with the same drive
+    disk      <\"array\">           when the type is Ldisk must to define;no default.
+    ip        <\"array\">           all ip list which you want to test;default ssh ip
     size      <int>               disk or file size;default 500
     rdpct     <\"array\">           percentage of read ;default \"0 100\"
     block     <\"array\">           test block size ;default \"4k 1M\"
@@ -85,6 +94,8 @@ usage(){
 
     e.g.
     --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/vdbench/aa\" --out \"/root/vdbench/outa\"
+    --size 666 --runtime 64800 --seekpct 100 --rdpct 70 --block 2M
+    --type Ldisk --disk \"sdb sdc\"
 
     ...\033[0m"
 
@@ -231,7 +242,7 @@ checkVal(){
         exit 1
     fi
      # 参数正确性
-    if [ $VD_TYPE == "fc" -o $VD_TYPE == "iscsi" -o $VD_TYPE == "nfs" -o $VD_TYPE == "cifs" ];then
+    if [ $VD_TYPE == "fc" -o $VD_TYPE == "iscsi" -o $VD_TYPE == "nfs" -o $VD_TYPE == "cifs" -o $VD_TYPE == "Ldisk" ];then
         echo "know run type : $VD_TYPE" >> ${LOG_FILE}
     else
         echo "type : $VD_TYPE error! no match" >> ${LOG_FILE}
@@ -308,7 +319,7 @@ getwd(){
 
     printf "%s\n" "wdlist:${WD_LIST[*]}" >> ${LOG_FILE}
 }
-
+# 获取命令
 getCommand(){
     case $VD_TYPE in
     fc)
@@ -316,6 +327,8 @@ getCommand(){
 
     iscsi)
         COMMAND="lsblk -o NAME,SIZE,VENDOR,MODEL,TRAN|grep iscsi |grep -B2 $V_SI|grep DubheFlash|awk '{printf \"/dev/%s\n\",\$1}'";;
+    Ldisk)
+        COMMAND="echo ${LOCAL_DISK_LIST[*]}|tr \" \" \"\n\"|sed \"s/s/\/dev\/s/g\"";;
     *)
         exit 0;;
     esac
@@ -475,7 +488,7 @@ vd-normal(){
 #        echo "run free model" >> ${LOG_FILE}
 #    fi
 
-LINE=`getopt -o a --long help,brand:,mode:,type:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date: -n 'Invalid parameter' -- "$@"`
+LINE=`getopt -o a --long help,brand:,mode:,type:,disk:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date: -n 'Invalid parameter' -- "$@"`
 
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
@@ -493,6 +506,8 @@ while true;do
     VD_TYPE=$2; shift 2;;
     --type)
     VD_TYPE=$2; shift 2;;
+    --disk)
+    LOCAL_DISK_LIST=($2); shift 2;;
     --ip)
     IP_LIST=($2); shift 2;;
     --size)
@@ -536,7 +551,6 @@ case $MODE in
 2)
     vd-createFile
     echo "create file ok!" >> ${LOG_FILE}
-    cat $VD_FILE/*.vdb
     runVdb-nohup
     ;;
 *)
