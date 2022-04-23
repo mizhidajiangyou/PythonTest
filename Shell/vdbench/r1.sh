@@ -106,7 +106,7 @@ pingIP(){
     while [ $a -eq 1 ];do
     line=`ping -c 1 -W 1 -s 1 $1 | grep "100% packet loss" | wc -l`
         if [ $line -eq 0 ];then
-            echo "ping $1 ok" >> ${LOG_FILE}
+            echo -e "ping $1 \033[32mok\033[0m" >> ${LOG_FILE}
             a=0
             return 0
         else
@@ -124,7 +124,7 @@ checkIP(){
     if [ `ip a | grep $MY_IP |wc -l` -eq 1 ];then
         echo "MY_IP is $MY_IP" >> ${LOG_FILE}
     else
-        echo "$MY_IP not ok !" >> ${LOG_FILE}
+        echo -e "$MY_IP not \033[32mok\033[0m !" >> ${LOG_FILE}
         exit 1
     fi
 }
@@ -450,50 +450,50 @@ makeTotalReport(){
 
 vd-createFile(){
     checkVal
-    echo -e "checkval ok" >> ${LOG_FILE}
+    echo -e "checkval \033[32mok\033[0m" >> ${LOG_FILE}
     getTestListB
-    echo -e "getTestListB ok" >> ${LOG_FILE}
+    echo -e "getTestListB \033[32mok\033[0m" >> ${LOG_FILE}
     getCommand
-    echo -e "getCommand ok" >> ${LOG_FILE}
+    echo -e "getCommand \033[32mok\033[0m" >> ${LOG_FILE}
     getwd
-    echo -e "getwd ok" >> ${LOG_FILE}
+    echo -e "getwd \033[32mok\033[0m" >> ${LOG_FILE}
     getrd
-    echo -e "getrd ok" >> ${LOG_FILE}
+    echo -e "getrd \033[32mok\033[0m" >> ${LOG_FILE}
     getsd
-    echo -e "getsd ok" >> ${LOG_FILE}
+    echo -e "getsd \033[32mok\033[0m" >> ${LOG_FILE}
     setHost
-    echo -e "setHost ok" >> ${LOG_FILE}
+    echo -e "setHost \033[32mok\033[0m" >> ${LOG_FILE}
     setVol
-    echo -e "setVol ok" >> ${LOG_FILE}
+    echo -e "setVol \033[32mok\033[0m" >> ${LOG_FILE}
     setTerm
-    echo -e "setTerm ok" >> ${LOG_FILE}
+    echo -e "setTerm \033[32mok\033[0m" >> ${LOG_FILE}
 }
 
 vd-normal(){
     checkVal
-    echo -e "checkval ok" >> ${LOG_FILE}
+    echo -e "checkval \033[32mok\033[0m" >> ${LOG_FILE}
     getTestListB
-    echo -e "getTestListB ok" >> ${LOG_FILE}
+    echo -e "getTestListB \033[32mok\033[0m" >> ${LOG_FILE}
     getCommand
-    echo -e "getCommand ok" >> ${LOG_FILE}
+    echo -e "getCommand \033[32mok\033[0m" >> ${LOG_FILE}
     getwd
-    echo -e "getwd ok" >> ${LOG_FILE}
+    echo -e "getwd \033[32mok\033[0m" >> ${LOG_FILE}
     getrd
-    echo -e "getrd ok" >> ${LOG_FILE}
+    echo -e "getrd \033[32mok\033[0m" >> ${LOG_FILE}
     getsd
-    echo -e "getsd ok" >> ${LOG_FILE}
+    echo -e "getsd \033[32mok\033[0m" >> ${LOG_FILE}
     setHost
-    echo -e "setHost ok" >> ${LOG_FILE}
+    echo -e "setHost \033[32mok\033[0m" >> ${LOG_FILE}
     setVol
-    echo -e "setVol ok" >> ${LOG_FILE}
+    echo -e "setVol \033[32mok\033[0m" >> ${LOG_FILE}
     setTerm
-    echo -e "setTerm ok" >> ${LOG_FILE}
+    echo -e "setTerm \033[32mok\033[0m" >> ${LOG_FILE}
     runVdb
-    echo -e "runVdb ok" >> ${LOG_FILE}
+    echo -e "runVdb \033[32mok\033[0m" >> ${LOG_FILE}
     getDataMakePic
-    echo -e "getDataMakePic ok" >> ${LOG_FILE}
+    echo -e "getDataMakePic \033[32mok\033[0m" >> ${LOG_FILE}
     makeTotalReport
-    echo -e "makeTotalReport ok" >> ${LOG_FILE}
+    echo -e "makeTotalReport \033[32mok\033[0m" >> ${LOG_FILE}
 
 }
 
@@ -589,7 +589,7 @@ case $MODE in
 
 2)
     vd-createFile
-    echo "create file ok!" >> ${LOG_FILE}
+    echo -e "create file \033[32mok\033[0m!" >> ${LOG_FILE}
     runVdb-nohup
     ;;
 *)
