@@ -67,9 +67,11 @@ usage(){
     [--file| --out| --log| --date] \n
     brand     <string>            disk manufacturer;default SEAGATE
     mode      <int>               whether which run mode you test;default 2
-              *   1               1-all
-              *   2               2-nohup run vdbench &
-              *   3               3-only use your output to make picture report
+              *   1               test and make report
+              *   2               nohup run vdbench &
+              *   3               only use your output to make picture report
+              *   4               ssh no password
+              *   5               use parameter \"command\" to run bash in all client
     type      <string>            whether which volume type you test;default fc
               *   fc              must install device-mapper-multipath(multipath-tools)
               *   iscsi           must install iscsi
@@ -91,10 +93,17 @@ usage(){
     out       <\"path\">            vdbench out put will put in;default pwd/vd-output
     log       <\"path\">            run logs will put in;default same with file
     date      <date>              date for test ,like 220101;default date '+%y%m%d'
+    command   <string>            the command in ssh \"ip\" bash \"command\"
+
     e.g.
     --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/vdbench/aa\" --out \"/root/vdbench/outa\"
     --size 666 --runtime 64800 --seekpct 100 --rdpct 70 --block 2M
     --type Ldisk --disk \"sdb sdc\"
+    --command \"echo '- - -'|tee /sys/class/scsi_host/*/scan -a\"
+    --command \"iscsiadm -m discovery -t st -p xx.xx.xx.xx && iscsiadm -m node --login -p xx.xx.xx.xx \"
+    --command \"multipath -F && lsblk -o \"NAME,MODEL\"|grep size | grep model |awk '{print $1}' | while read line ;do echo 1> /sys/block/$line/device/delete;done\"
+
+
     ...\033[0m"
 
     exit 1

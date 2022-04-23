@@ -10,11 +10,11 @@ SWIA="13.10.10.36"
 SWIB="13.10.10.37"
 # 客户端ISCSI的IP
 CWI="13.10.10.79"
-CW_IQN = "iqn.1997-09.org.debian:09:asdasdascsx4564123333"
+CW_IQN = ["iqn.1997-09.org.debian:09:asdasdascsx4564123333","iqn.1997-09.org.debian:09:asdasdascsx4564123333" ]
 # 服务端FC的IP
-CFI = "192.168.0.233"
+CFI = ["192.168.16.231", "192.168.16.232" ]
 # WWPN
-CWWPN = "21000036ff963215"
+CWWPN = ["21000036ff963215", "21000036ff963216" ,"21000036ff963217" ,"21000036ff963218"]
 # 测试项目
 TEST_TRIM = ["NFS", "CIFS", "FC", "ISCSI"]
 

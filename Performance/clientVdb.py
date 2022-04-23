@@ -1,14 +1,10 @@
 import os
-import sys
-import time
-
-parent_path = os.path.dirname(sys.path[0])
-if parent_path not in sys.path:
-	sys.path.append(parent_path)
 
 from Config.performance import diskList
-from Common.timeOperate import zSleep
+from Common.timeOperate import zSleep, returnYearMounthDay
 
-if __name__=='__main__':
-
-	os.system('')
+if __name__ == '__main__':
+	# 测试日期
+	testDay = returnYearMounthDay()
+	# 运行服务端卷分配
+	os.system('python3 clientReady.py')
