@@ -57,6 +57,7 @@ MY_IP=${IP_LIST[0]}
 MY_PASSWD=password
 # 测试本地磁盘列表
 LOCAL_DISK_LIST=()
+SSH_COMMAND=""
 # 使用方法
 usage(){
     echo -e "\033[1musage: vdbench.sh [ --help]
@@ -94,7 +95,6 @@ usage(){
     log       <\"path\">            run logs will put in;default same with file
     date      <date>              date for test ,like 220101;default date '+%y%m%d'
     command   <string>            the command in ssh \"ip\" bash \"command\"
-
     e.g.
     --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/vdbench/aa\" --out \"/root/vdbench/outa\"
     --size 666 --runtime 64800 --seekpct 100 --rdpct 70 --block 2M
@@ -102,8 +102,6 @@ usage(){
     --command \"echo '- - -'|tee /sys/class/scsi_host/*/scan -a\"
     --command \"iscsiadm -m discovery -t st -p xx.xx.xx.xx && iscsiadm -m node --login -p xx.xx.xx.xx \"
     --command \"multipath -F && lsblk -o \"NAME,MODEL\"|grep size | grep model |awk '{print $1}' | while read line ;do echo 1> /sys/block/$line/device/delete;done\"
-
-
     ...\033[0m"
 
     exit 1
@@ -204,20 +202,39 @@ run-no(){
     do
        sendPub ${i}
     done
+    # 修改know_host文件
+    for ((i=0;i<${#IP_LIST[*]};i++))
+    do
+       echo `sed "s/${IP_LIST[$i]}/${clientName[$i]}/g" /root/.ssh/known_hosts |grep ${clientName[$i]}` >> /root/.ssh/known_hosts
+
+    done
+
     # 修改hosts
     for i in ${IP_LIST[*]}
     do
        scp /etc/hosts root@${i}:/etc
+       scp /root/.ssh/known_hosts root@${i}:/root/.ssh/
     done
 
 }
-ip_main(){
+runBash(){
 
+    for i in ${IP_LIST[*]}
+    do
+       ssh ${i} "$SSH_COMMAND"
+    done
+
+}
+
+
+ip_main(){
     checkIP
     makeClient
     makeHosts
     run-no
 }
+
+
 
 # 检查变量正确性
 checkVal(){
@@ -443,17 +460,10 @@ makeTotalReport(){
 }
 
 # 生成图表依赖数据文件
-makeTotalReport(){
-    if [ `cat ${VD_OUT}"totals.html" | grep avg|wc -l` -ne ${#ALL_TEST_LIST_TITLE[*]} ] ; then
-         printf "\033[32m%s\033[0m\n" "output data error!" >> ${LOG_FILE}
-         exit 1
-    fi
-    echo "**********Report***********" >> ${VD_OUT}/TotalReport.z
-    for((i=0;i<${#ALL_TEST_LIST_TITLE[*]};i++))
-    do
-        cat ${VD_OUT}"totals.html" | grep avg |awk -v ti=${ALL_TEST_LIST_TITLE[$i]} -v num=$i 'NR==num+1 {printf "Title:\033[36m%s\033[0m, iops:\033[32m%s\033[0m, bs:\033[35m%s\033[0m\n",ti,$3,$4}' >> ${VD_OUT}/TotalReport.z
-    done
+makeMaxReport(){
+    continue
 }
+
 
 
 
@@ -535,7 +545,7 @@ vd-normal(){
 #        echo "run free model" >> ${LOG_FILE}
 #    fi
 
-LINE=`getopt -o a --long help,brand:,mode:,type:,disk:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date: -n 'Invalid parameter' -- "$@"`
+LINE=`getopt -o a --long help,brand:,mode:,type:,disk:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date:,command: -n 'Invalid parameter' -- "$@"`
 
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
@@ -583,6 +593,8 @@ while true;do
     VD_LOG=$2; shift 2;;
     --date)
     FILE_DATE=$2; shift 2;;
+    --command)
+    SSH_COMMAND=$2; shift 2;;
     --)
     shift;break;;
     *)
@@ -600,6 +612,9 @@ case $MODE in
     vd-createFile
     echo -e "create file \033[32mok\033[0m!" >> ${LOG_FILE}
     runVdb-nohup
+    ;;
+3)
+    ip_main
     ;;
 *)
     echo "no this mode" ;exit 127;;
