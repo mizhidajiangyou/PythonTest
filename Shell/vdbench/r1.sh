@@ -2,7 +2,7 @@
 # 使用脚本前，请确认防火墙状态
 # 该脚本用于生成单/多主机利用vdbench测试性能
 # 磁盘型号
-BRAND="SEAGATE"
+BRAND="DubheFlash"
 # 脚本模式
 MODE=2
 # 测试类型
@@ -32,21 +32,19 @@ OPERATION=(write read)
 # 文件读写方式
 FILEIO=(random sequential)
 # 文件选择方式
-FILESELECT=(random sequential)
+FILESELECT=(sequential)
+# 深度级别
+FILE_DEPTH=3
+# 目录个数
+FILE_WIDTH=5
+# 文件数目
+FILE_NUM=32
+# 文件大小
+FILE_SIZE=10M
 # IP
 IP_LIST=(`ip a | grep "state UP" -A 3 |awk '$2~/^[0-9]*\./ {print $2}' |awk -F "/" 'NR==1 {print $1}'`)
 # 日期
 FILE_DATE=`date '+%y%m%d'`
-# 脚本地址
-VD_FILE="`pwd`/$FILE_DATE/"
-# VDBENCH目录
-VD_HOME="/root/vdbench/"
-# 报告目录
-VD_OUT="$VD_FILE/vd-output/"
-# 日志存放目录
-VD_LOG="$VD_FILE/"
-# 日志重定向文件
-LOG_FILE="$VD_FILE/vd$FILE_DATE.log"
 # 测试项
 ALL_TEST_LIST=()
 # 测试名
@@ -62,7 +60,7 @@ SSH_COMMAND=""
 usage(){
     echo -e "\033[1musage: vdbench.sh [ --help]
     <--brand| --mode| --type| --ip> \n
-    (--Ldisk)
+    (--Ldisk)\n
     [--size| --rdpct| --block| --fileio| --seekpct] \n
     [--runtime| --interval| --warmup | --pause] \n
     [--file| --out| --log| --date] \n
@@ -96,12 +94,12 @@ usage(){
     date      <date>              date for test ,like 220101;default date '+%y%m%d'
     command   <string>            the command in ssh \"ip\" bash \"command\"
     e.g.
-    --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/vdbench/aa\" --out \"/root/vdbench/outa\"
+    --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/vdbench/aa/\" --out \"/root/vdbench/outa/\"
     --size 666 --runtime 64800 --seekpct 100 --rdpct 70 --block 2M
     --type Ldisk --disk \"sdb sdc\"
     --command \"echo '- - -'|tee /sys/class/scsi_host/*/scan -a\"
     --command \"iscsiadm -m discovery -t st -p xx.xx.xx.xx && iscsiadm -m node --login -p xx.xx.xx.xx \"
-    --command \"multipath -F && lsblk -o \"NAME,MODEL\"|grep size | grep model |awk '{print $1}' | while read line ;do echo 1> /sys/block/$line/device/delete;done\"
+    --command \"multipath -F && lsblk -o \"NAME,MODEL\"|grep size | grep model |awk '{print \$1}' | while read line ;do echo 1> /sys/block/\$line/device/delete;done\"
     ...\033[0m"
 
     exit 1
@@ -239,7 +237,13 @@ ip_main(){
 # 检查变量正确性
 checkVal(){
 
-     # 检测日志存放目录
+    # PYTHON环境检查
+    if [ ! -n $ZHOME  ]
+    then
+        echo "path not ready!" >> ${LOG_FILE}
+    fi
+
+    # 检测日志存放目录
     if [ -d $VD_LOG ]
     then
         echo "log file in $VD_LOG" >> ${LOG_FILE}
@@ -292,6 +296,30 @@ checkVal(){
     #
 }
 
+# 获取命令
+getCommand(){
+    case $VD_TYPE in
+    fc)
+        COMMAND="multipath -ll |grep -B2 $V_SI|grep ${BRAND}|awk '{printf \"/dev/mapper/%s\n\",\$1}'";;
+
+    iscsi)
+        COMMAND="lsblk -o NAME,SIZE,VENDOR,MODEL,TRAN|grep iscsi |grep -B2 $V_SI|grep ${BRAND}|awk '{printf \"/dev/%s\n\",\$1}'";;
+    Ldisk)
+        COMMAND="echo ${LOCAL_DISK_LIST[*]}|tr \" \" \"\n\"|sed \"s/s/\/dev\/s/g\"";;
+    nfs)
+        COMMAND="df | awk '\$1~/^[0-9]./{print \$6}'"
+        ;;
+    cifs)
+        COMMAND="df | awk '\$1~/^\/\/[0-9]./{print \$6}'"
+        ;;
+
+    *)
+        exit 0;;
+    esac
+}
+
+
+# 块设备
 getTestListB(){
     for i in ${BLOCK[*]}
     do
@@ -311,7 +339,7 @@ getTestListB(){
 
     printf "%s\n" "testBlist:${ALL_TEST_LIST[*]}" >> ${LOG_FILE}
 }
-
+# 文件系统
 getTestListF(){
     for i in ${FILESELECT[*]}
     do
@@ -333,80 +361,138 @@ getTestListF(){
 
     printf "%s\n" "testFlist:${ALL_TEST_LIST[*]}" >> ${LOG_FILE}
 }
-
+# 块设备wd设置
 getwd(){
     WD_LIST=()
     for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
     do
-        WD_LIST[$i]="wd=wd$i,sd=sd*,${ALL_TEST_LIST[$i]}"
+        if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
+            WD_LIST[$i]="fwd=fwd$i,fsd=fsd*,${ALL_TEST_LIST[$i]}"
+        else
+            WD_LIST[$i]="wd=wd$i,sd=sd*,${ALL_TEST_LIST[$i]}"
+        fi
+
     done
 
     printf "%s\n" "wdlist:${WD_LIST[*]}" >> ${LOG_FILE}
 }
-# 获取命令
-getCommand(){
-    case $VD_TYPE in
-    fc)
-        COMMAND="multipath -ll |grep -B2 $V_SI|grep DubheFlash|awk '{printf \"/dev/mapper/%s\n\",\$1}'";;
+# # 文件系统fwd设置
+# getfwd(){
+    # FWD_LIST=()
+    # for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
+    # do
+        # FWD_LIST[$i]="fwd=fwd$i,fsd=fsd*,${ALL_TEST_LIST[$i]}"
+    # done
 
-    iscsi)
-        COMMAND="lsblk -o NAME,SIZE,VENDOR,MODEL,TRAN|grep iscsi |grep -B2 $V_SI|grep DubheFlash|awk '{printf \"/dev/%s\n\",\$1}'";;
-    Ldisk)
-        COMMAND="echo ${LOCAL_DISK_LIST[*]}|tr \" \" \"\n\"|sed \"s/s/\/dev\/s/g\"";;
-    *)
-        exit 0;;
-    esac
-}
+    # printf "%s\n" "fwdlist:${FWD_LIST[*]}" >> ${LOG_FILE}
+# }
 
+
+# 获取设备列表
 getsd(){
     SD_LIST=()
     for ((i=0;i<${#IP_LIST[*]};i++))
     do
-
+        # 获取盘符
         DN=(`ssh ${IP_LIST[$i]} "$COMMAND"`)
+        # 判断是否为空
+        if [ ! -n $DN ]
+        then
+            printf "\033[32mcan't get diskname\033[0m for command:%s\n" $COMMAND >> ${LOG_FILE}
+            exit 1
+        fi
         for ((j=0;j<${#DN[*]};j++))
         do
            count=`echo $i*${#DN[*]}+$j |bc`
-
-           SD_LIST[${#SD_LIST[*]}]="sd=sd$count,hd=hd$i,lun=${DN[$j]}"
+           if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
+                SD_LIST[${#SD_LIST[*]}]="fsd=fsd$count,hd=hd$i,anchor=${DN[$j]}"
+           else
+                SD_LIST[${#SD_LIST[*]}]="sd=sd$count,hd=hd$i,lun=${DN[$j]}"
+           fi
 
         done
     done
     printf "%s\n" "sdlist:${SD_LIST[*]}" >> ${LOG_FILE}
 }
 
+# # 获取文件系统列表
+# getfsd(){
+    # SD_LIST=()
+    # for ((i=0;i<${#IP_LIST[*]};i++))
+    # do
+        # # 获取盘符
+        # DN=(`ssh ${IP_LIST[$i]} "$COMMAND"`)
+        # # 判断是否为空
+        # if [ ! -n $DN]
+        # then
+            # printf "\033[32mno mount file system\033[0m for command:%s\n" $COMMAND >> ${LOG_FILE}
+            # exit 1
+        # fi
+        # for ((j=0;j<${#DN[*]};j++))
+        # do
+           # count=`echo $i*${#DN[*]}+$j |bc`
 
+           # SD_LIST[${#SD_LIST[*]}]="fsd=fsd$count,hd=hd$i,anchor=${DN[$j]}"
+
+        # done
+    # done
+    # printf "%s\n" "fsdlist:${FSD_LIST[*]}" >> ${LOG_FILE}
+# }
+
+# run设置
 getrd(){
     RD_LIST=()
     for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
     do
-        RD_LIST[$i]="rd=rd$i,wd=wd$i,threads=$THREADS,iorate=max,elapsed=$ELAPSED,interval=$INTERVAL,warmup=$WARMUP,pause=$PAUSE"
+        if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
+            RD_LIST[$i]="rd=rd1,fwd=fwd1,fwdrate=max,format=restart,elapsed=$ELAPSED,interval=$INTERVAL,warmup=$WARMUP,pause=$PAUSE,threads=$THREADS"
+        else
+            RD_LIST[$i]="rd=rd$i,wd=wd$i,threads=$THREADS,iorate=max,elapsed=$ELAPSED,interval=$INTERVAL,warmup=$WARMUP,pause=$PAUSE"
+        fi
     done
     printf "%s\n" "rdlist:${RD_LIST[*]}" >> ${LOG_FILE}
 }
 
+# # 文件系统rd设置
+# getfrd(){
+    # RD_LIST=()
+    # for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
+    # do
+        # RD_LIST[$i]="rd=rd1,fwd=fwd1,fwdrate=max,format=restart,elapsed=$ELAPSED,interval=$INTERVAL,warmup=$WARMUP,pause=$PAUSE,threads=$THREADS"
+    # done
+    # printf "%s\n" "rdlist:${RD_LIST[*]}" >> ${LOG_FILE}
+# }
 
 # host.vdb
 setHost(){
-printf "%s\n" "hd=default,user=root,vdbench=$VD_HOME,shell=ssh,jvms=${#IP_LIST[*]}" > ${VD_FILE}/host.vdb
-for ((i=0;i<${#IP_LIST[*]};i++))
-do
-    printf "%s\n" "hd=hd${i},system=${IP_LIST[$i]}" >> ${VD_FILE}/host.vdb
-done
+    printf "%s\n" "hd=default,user=root,vdbench=$VD_HOME,shell=ssh,jvms=${#IP_LIST[*]}" > ${VD_FILE}/host.vdb
+    for ((i=0;i<${#IP_LIST[*]};i++))
+    do
+        printf "%s\n" "hd=hd${i},system=${IP_LIST[$i]}" >> ${VD_FILE}/host.vdb
+    done
 }
+
 
 # volume.vdb
 setVol(){
-printf "%s\n" "sd=default,openflags=o_direct" > ${VD_FILE}/volume.vdb
-for ((i=0;i<${#SD_LIST[*]};i++))
-do
-    printf "%s\n" "${SD_LIST[$i]}" >> ${VD_FILE}/volume.vdb
-done
+
+    if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
+        printf "%s\n" " fsd=default,depth=$FILE_DEPTH,width=$FILE_WIDTH,files=$FILE_NUM,size=$FILE_SIZE,shared=yes,openflags=directio" > ${VD_FILE}/volume.vdb
+    else
+        printf "%s\n" "sd=default,openflags=o_direct" > ${VD_FILE}/volume.vdb
+    fi
+    for ((i=0;i<${#SD_LIST[*]};i++))
+    do
+        printf "%s\n" "${SD_LIST[$i]}" >> ${VD_FILE}/volume.vdb
+    done
 }
+
+
 
 # run.vdb
 setTerm(){
     printf "%s\n%s\n%s\n" "messagescan=no" "include=$VD_FILE/host.vdb" "include=$VD_FILE/volume.vdb" > ${VD_FILE}/run.vdb
+
     for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
     do
         #printf "%s\n%s\n" ${WD_LIST[$i]} ${RD_LIST[$i]} >> ${VD_FILE}/run.vdb
@@ -439,7 +525,7 @@ getDataMakePic(){
         l_n=`echo $ONE_RD_COUNT*$i+$ONE_RD_COUNT|bc`
         awk '$3~/^[0-9]*\./{print $3}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.iops
         awk '$3~/^[0-9]*\./{print $4}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.bs
-        cp IOLine.py-bak IOLine.py
+        cp $ZHOME/Performance/IOLine.py IOLine.py
         sed -i "s!LINE_TITLE!${ALL_TEST_LIST_TITLE[$i]}!g" IOLine.py
         sed -i "s!SAVE_PATH!$VD_OUT!g" IOLine.py
         python3  IOLine.py
@@ -463,50 +549,46 @@ makeTotalReport(){
 makeMaxReport(){
     continue
 }
+# 根据type生成vdbench可执行的脚本
+choiceList(){
+    #
+    if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ]
+    then
+        getTestListF
+        echo -e "getTestListF \033[32mok\033[0m" >> ${LOG_FILE}
 
-
+    else
+        getTestListB
+        echo -e "getTestListB \033[32mok\033[0m" >> ${LOG_FILE}
+    fi
+}
 
 
 vd-createFile(){
     checkVal
     echo -e "checkval \033[32mok\033[0m" >> ${LOG_FILE}
-    getTestListB
-    echo -e "getTestListB \033[32mok\033[0m" >> ${LOG_FILE}
     getCommand
     echo -e "getCommand \033[32mok\033[0m" >> ${LOG_FILE}
+    choiceList
+    echo -e "choice $VD_TYPE \033[32mok\033[0m" >> ${LOG_FILE}
     getwd
-    echo -e "getwd \033[32mok\033[0m" >> ${LOG_FILE}
+    echo -e "getfwd \033[32mok\033[0m" >> ${LOG_FILE}
     getrd
-    echo -e "getrd \033[32mok\033[0m" >> ${LOG_FILE}
+    echo -e "getfrd \033[32mok\033[0m" >> ${LOG_FILE}
     getsd
-    echo -e "getsd \033[32mok\033[0m" >> ${LOG_FILE}
+    echo -e "getfsd \033[32mok\033[0m" >> ${LOG_FILE}
     setHost
     echo -e "setHost \033[32mok\033[0m" >> ${LOG_FILE}
     setVol
     echo -e "setVol \033[32mok\033[0m" >> ${LOG_FILE}
     setTerm
     echo -e "setTerm \033[32mok\033[0m" >> ${LOG_FILE}
+
 }
 
 vd-normal(){
-    checkVal
-    echo -e "checkval \033[32mok\033[0m" >> ${LOG_FILE}
-    getTestListB
-    echo -e "getTestListB \033[32mok\033[0m" >> ${LOG_FILE}
-    getCommand
-    echo -e "getCommand \033[32mok\033[0m" >> ${LOG_FILE}
-    getwd
-    echo -e "getwd \033[32mok\033[0m" >> ${LOG_FILE}
-    getrd
-    echo -e "getrd \033[32mok\033[0m" >> ${LOG_FILE}
-    getsd
-    echo -e "getsd \033[32mok\033[0m" >> ${LOG_FILE}
-    setHost
-    echo -e "setHost \033[32mok\033[0m" >> ${LOG_FILE}
-    setVol
-    echo -e "setVol \033[32mok\033[0m" >> ${LOG_FILE}
-    setTerm
-    echo -e "setTerm \033[32mok\033[0m" >> ${LOG_FILE}
+    vd-createFile
+    echo -e "create file \033[32mok\033[0m!" >> ${LOG_FILE}
     runVdb
     echo -e "runVdb \033[32mok\033[0m" >> ${LOG_FILE}
     getDataMakePic
@@ -602,6 +684,16 @@ while true;do
     esac
 done
 
+# 脚本地址
+VD_FILE="`pwd`/$FILE_DATE/"
+# VDBENCH目录
+VD_HOME="/root/vdbench/"
+# 报告目录
+VD_OUT="$VD_FILE/vd-output/"
+# 日志存放目录
+VD_LOG="$VD_FILE/"
+# 日志重定向文件
+LOG_FILE="$VD_FILE/vd$FILE_DATE.log"
 
 case $MODE in
 1)
