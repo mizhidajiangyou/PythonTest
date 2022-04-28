@@ -89,7 +89,8 @@ usage(){
               *   iscsi           must install iscsi
               *   nfs             must install nfs-utils
               *   cifs            default support
-              *   Ldisk           customized single/multi client local disk test with the same drive
+              *   Ldisk           test every client local disk whitch you  appoint
+              *   Lfile           test every client local file system  whitch you  appoint
     disk      <\"array\">           when the type is Ldisk must to define;no default.
     ip        <\"array\">           all ip list which you want to test;default ssh ip
     size      <int>               disk or file size;default 500
