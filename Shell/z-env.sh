@@ -7,10 +7,17 @@ then
     echo "error!more than one testFile! please delete or manual add python path!"
     exit 1
 fi
-ZHOME=`find / -type d -name "myTest"`
+
+if [ "${ZHOME}" == "" ]
+then
+    ZHOME=`find / -type d -name "myTest"`
+    echo "export ZHOME=$ZHOME/" >> /etc/profile
+fi
+
+
 if [ "${PYTHONPATH}" != "$ZHOME" ]
 then
-    echo "export PYTHONPATH=$ZHOME" >> /etc/profile
+    echo "export PYTHONPATH=$ZHOME/" >> /etc/profile
     source /etc/profile
 fi
 
