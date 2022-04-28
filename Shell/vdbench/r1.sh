@@ -366,7 +366,7 @@ getTestListF(){
                 for f in ${FILEIO[*]}
                 do
                     #设定参数
-                    fwd="operation=$k,xfersize=$j,fileio=$i,fileselect=$f"
+                    fwd="operation=$k,xfersize=$j,fileio=$f,fileselect=$i"
                     ms="${j}-${f}-$k-$i.s"
                     ALL_TEST_LIST[${#ALL_TEST_LIST[*]}]=${fwd}
                     ALL_TEST_LIST_TITLE[${#ALL_TEST_LIST_TITLE[*]}]=${ms}
@@ -380,10 +380,18 @@ getTestListF(){
 # 块设备wd设置
 getwd(){
     WD_LIST=()
+    FWDL=()
     for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
     do
         if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
-            WD_LIST[$i]="fwd=fwd$i,fsd=fsd*,${ALL_TEST_LIST[$i]}"
+            for ((j=0;j<${#IP_LIST[*]};j++))
+            do
+                FWDN="${i}t${j}h"
+                FWDL[$i]="${FWDL[$i]}${FWDN},"
+                FSDLN="(${FSDL[$j]})"
+                WD_LIST[$i]="fwd=$FWDN,fsd=$FSDLN,${ALL_TEST_LIST[$i]},host=hd$j"
+            done
+        # printf "%s\n" "FWDL:${FWDL[*]}" >> ${LOG_FILE}
         else
             WD_LIST[$i]="wd=wd$i,sd=sd*,${ALL_TEST_LIST[$i]}"
         fi
@@ -395,24 +403,37 @@ getwd(){
 
 # 获取设备列表
 getsd(){
-    # 普通数组用于存放sd类型的vdbench脚本
+    # sd类型直接使用数组存放脚本信息，fsd需额外处理
     SD_LIST=()
-    # 哈希表用于存放fsd相关信息
-    declare -A Z_FILE
+    # 存放所有数据以便后续调用
+    FSD_LIST=()
+    #存放同一hd的fsd
+    FSDL=()
     for ((i=0;i<${#IP_LIST[*]};i++))
     do
         # 获取盘符
         DN=(`ssh ${IP_LIST[$i]} "$COMMAND"`)
         # 判断是否为空
-        if [ ! -n "$DN" ]
+        if [ ${#DN[*]} -lt 1 ]
         then
-            printf "\033[32mcan't get list\033[0m for command:%s\n" $COMMAND >> ${LOG_FILE}
+            printf "\033[32mcan't get list\033[0m for command:%s\n" "$COMMAND" >> ${LOG_FILE}
             tail ${LOG_FILE} -n 5
             exit 1
         fi
-
         if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
-           Z_FILE["$i"]="${DN[*]}"
+
+            FSD_LIST[${#FSD_LIST[*]}]="${DN[*]}"
+            printf "%s\n" "fsdlist:${FSD_LIST[*]}" >> ${LOG_FILE}
+
+            FSD=(${DN[*]})
+            for ((j=0;j<${#FSD[*]};j++))
+            do
+                FSDN="${i}hd${j}"
+                FSDL[$i]="${FSDL[$i]}${FSDN},"
+                SD_LIST[${#SD_LIST[*]}]="fsd=$FSDN,anchor=${FSD[$j]}"
+            done
+            # printf "%s\n" "FSDL:${FSDL[*]}" >> ${LOG_FILE}
+
         else
             for ((j=0;j<${#DN[*]};j++))
             do
@@ -420,26 +441,32 @@ getsd(){
                 SD_LIST[${#SD_LIST[*]}]="sd=sd$count,hd=hd$i,lun=${DN[$j]}"
             done
         fi
-
-
     done
-    printf "%s\n" "sdlist:${SD_LIST[*]}" >> ${LOG_FILE}
+        printf "%s\n" "sdlist:${SD_LIST[*]}" >> ${LOG_FILE}
 }
 
 
 # run设置
 getrd(){
     RD_LIST=()
+
     for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
     do
+
         if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
-            RD_LIST[$i]="rd=rd$i,fwd=fwd$i,fwdrate=max,format=restart,elapsed=$ELAPSED,interval=$INTERVAL,warmup=$WARMUP,pause=$PAUSE,threads=$THREADS"
+
+            FWDLN="(${FWDL[$i]})"
+            RD_LIST[$i]="rd=rd$i,fwd=$FWDLN,fwdrate=max,format=restart,elapsed=$ELAPSED,interval=$INTERVAL,warmup=$WARMUP,pause=$PAUSE,threads=$THREADS"
+
+
         else
             RD_LIST[$i]="rd=rd$i,wd=wd$i,threads=$THREADS,iorate=max,elapsed=$ELAPSED,interval=$INTERVAL,warmup=$WARMUP,pause=$PAUSE"
         fi
+
     done
     printf "%s\n" "rdlist:${RD_LIST[*]}" >> ${LOG_FILE}
 }
+
 
 # host.vdb
 setHost(){
@@ -464,6 +491,7 @@ setVol(){
         printf "%s\n" "${SD_LIST[$i]}" >> ${VD_FILE}/volume.vdb
     done
 }
+
 
 
 # run.vdb
@@ -549,12 +577,12 @@ vd-createFile(){
     echo -e "getCommand \033[32mok\033[0m" >> ${LOG_FILE}
     choiceList
     echo -e "choice $VD_TYPE \033[32mok\033[0m" >> ${LOG_FILE}
+    getsd
+    echo -e "getfsd \033[32mok\033[0m" >> ${LOG_FILE}
     getwd
     echo -e "getfwd \033[32mok\033[0m" >> ${LOG_FILE}
     getrd
     echo -e "getfrd \033[32mok\033[0m" >> ${LOG_FILE}
-    getsd
-    echo -e "getfsd \033[32mok\033[0m" >> ${LOG_FILE}
     setHost
     echo -e "setHost \033[32mok\033[0m" >> ${LOG_FILE}
     setVol
@@ -593,17 +621,6 @@ vd-normal(){
     else
         echo "continue"
     fi
-#    # 检测参数正确性
-#    if [ $1x != x ];then
-#        if [ $1 == "default" ];then
-#            echo "run in default" >> ${LOG_FILE}
-#        else
-#            echo "Invalid parameter" >> ${LOG_FILE}
-#            usage
-#        fi
-#    else
-#        echo "run free model" >> ${LOG_FILE}
-#    fi
 
 LINE=`getopt -o a --long help,brand:,mode:,type:,disk:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date:,command: -n 'Invalid parameter' -- "$@"`
 
