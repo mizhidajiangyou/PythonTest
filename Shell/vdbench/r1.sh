@@ -317,7 +317,7 @@ checkVal(){
 getCommand(){
     case $VD_TYPE in
     fc)
-        COMMAND="multipath -ll |grep -B2 $V_SI|grep ${BRAND}|awk '{printf \"/dev/mapper/%s\n\",\$1}'";;
+        COMMAND="multipath -ll |grep -B2 size=$V_SI|grep ${BRAND}|awk '{printf \"/dev/mapper/%s\n\",\$1}'";;
 
     iscsi)
         COMMAND="lsblk -o NAME,SIZE,VENDOR,MODEL,TRAN|grep iscsi |grep -B2 $V_SI|grep ${BRAND}|awk '{printf \"/dev/%s\n\",\$1}'";;
@@ -538,7 +538,7 @@ getDataMakePic(){
     done
     awk '$3~/^[0-9]*\./{printf "%s\n","block:"$5"--iops:"$3"--bs:"$4"--resp:"$7}' $VD_OUT/totals.html  > $VD_OUT/total.sin
 }
-# 生成TotalReport.z来获取易读的total信息
+# 生成TotalReport.z与z.md来获取易读的total信息
 makeTotalReport(){
     if [ `cat ${VD_OUT}"totals.html" | grep avg|wc -l` -ne ${#ALL_TEST_LIST_TITLE[*]} ] ; then
          printf "\033[32m%s\033[0m\n" "output data error!" >> ${LOG_FILE}
@@ -550,6 +550,9 @@ makeTotalReport(){
     do
         cat ${VD_OUT}"totals.html" | grep avg |awk -v ti=${ALL_TEST_LIST_TITLE[$i]} -v num=$i 'NR==num+1 {printf "Title:\033[36m%s\033[0m, iops:\033[32m%s\033[0m, bs:\033[35m%s\033[0m\n",ti,$3,$4}' >> ${VD_OUT}/TotalReport.z
     done
+    awk '$3~/^[0-9]*\./{printf "%s","|"$3"/"$7" "}' $VD_OUT/totals.html  > $VD_OUT/z.md
+    echo -e "|\n"  >> $VD_OUT/z.md
+
 }
 
 # 生成图表依赖数据文件
