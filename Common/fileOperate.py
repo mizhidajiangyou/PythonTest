@@ -1,4 +1,4 @@
-from Config.currency import currencylog, TESTPATH, PERFORMANCEREPORT
+from Config.currency import currencyLog, TESTPATH, PERFORMANCEREPORT
 from Common.timeOperate import returnYearMounthDayFile
 import os
 import shutil
@@ -6,7 +6,7 @@ import sys
 from numpy import array
 
 # 实例化log模块
-fileLog = currencylog
+fileLog = currencyLog
 
 
 def readFileAndMakeList(path):

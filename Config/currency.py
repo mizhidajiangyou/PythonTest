@@ -1,6 +1,7 @@
 from Common.myLog import zLog
 from os import path
 from Common.timeOperate import returnYearMounthDay
+from requests import session
 
 # 脚本路径
 TESTPATH=path.abspath('..')
@@ -21,7 +22,10 @@ retryCount=3
 timeSleep=5
 
 # 通用日志模块实例化
-currencylog = zLog()
+currencyLog = zLog()
+
+# 通用session
+currencySession = session()
 
 # 达到最大尝试次数提示语
 ErrorMax = "尝试已达" + str(retryCount) + "次，失败！"

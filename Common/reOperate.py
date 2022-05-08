@@ -1,9 +1,9 @@
 import re
 from Config.regularExpression import *
 from Common.fileOperate import readFileAndMakeString
-from Config.currency import currencylog
+from Config.currency import currencyLog
 
-reLog =currencylog
+reLog =currencyLog
 
 def reSub(rExpression,rString, orString):
 	"""

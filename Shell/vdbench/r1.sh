@@ -39,8 +39,8 @@ FILE_DEPTH=3
 FILE_WIDTH=5
 # 文件数目
 FILE_NUM=32
-# 文件大小
-FILE_SIZE=10M
+# 文件大小(MB)
+FILE_SIZE=10
 # IP
 IP_LIST=(`ip a | grep "state UP" -A 3 |awk '$2~/^[0-9]*\./ {print $2}' |awk -F "/" 'NR==1 {print $1}'`)
 # 日期
@@ -102,6 +102,10 @@ usage(){
     interval  <int>               print interval(s) ;default 1
     warmup    <int>               hot start time(s) ;default 30
     pause     <int>               pause time(s) ;default 30
+    fdepth    <int>               fsd default file depth
+    fwidth    <int>               fsd default file width
+    fnum      <int>               fsd default file num
+    fsize     <int>               fsd default file size (MB)
     file      <\"path\">            *.vbd will put in;default pwd
     out       <\"path\">            vdbench out put will put in;default pwd/vd-output
     log       <\"path\">            run logs will put in;default same with file
@@ -109,7 +113,7 @@ usage(){
     command   <string>            the command in ssh \"ip\" bash \"command\"
     e.g.
     --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/z/aa/\" --out \"/root/z/outa/\" --log  \"/root/z/log/\"
-    --size 666 --runtime 64800 --seekpct 100 --rdpct 70 --block 2M
+    --size 666 --runtime 604800 --seekpct 100 --rdpct 70 --block 2M
     --type Ldisk --disk \"sdb sdc\"
     --command \"echo '- - -'|tee /sys/class/scsi_host/*/scan -a\"
     --command \"iscsiadm -m discovery -t st -p xx.xx.xx.xx && iscsiadm -m node --login -p xx.xx.xx.xx \"
@@ -119,6 +123,38 @@ usage(){
     exit 1
 
 }
+# 判断int类型
+pdInt(){
+    expr $1 + 0 &>/dev/null
+    if [  $? -ne 0 ];then
+        sendLog "type not int!" $LINEON 3
+        usage
+        exit 1
+    fi
+
+}
+# 日志管理
+sendLog(){
+    case $2 in
+    0)
+        LEVEL="DEBUG - ";;
+    1)
+        LEVEL="INFO - ";;
+    2)
+        LEVEL="WARNING - ";;
+    3)
+        LEVEL="ERROR - ";;
+    4)
+        LEVEL="CRITICAL - ";;
+    *)
+        LEVEL="INFO - ";;
+    esac
+
+    printf "%-25s%s\n" "`date '+%Y-%m-%d %H:%M:%S.%3N'`"  " $LEVEL$1" >> ${LOG_FILE}
+}
+
+
+
 # 判断IP是否可用
 pingIP(){
     a=1
@@ -252,19 +288,21 @@ ip_main(){
 # 检查变量正确性
 checkVal(){
 
-    # PYTHON环境检查
-    if [ ! -n $ZHOME  ]
-    then
-        echo "path not ready!" >> ${LOG_FILE}
-    fi
 
     # 检测日志存放目录
     if [ -d $VD_LOG ]
     then
-        echo "log file in $VD_LOG" >> ${LOG_FILE}
+        sendLog "log file in $VD_LOG" 1
     else
         mkdir -p $VD_LOG
-        echo "mkdir log FILE" >> ${LOG_FILE}
+        sendLog "mkdir log FILE" 2
+    fi
+
+
+    # PYTHON环境检查
+    if [ ! -n $ZHOME  ]
+    then
+        echo "path not ready!" >> ${LOG_FILE}
     fi
 
     # 检测脚本存放目录
@@ -279,19 +317,51 @@ checkVal(){
     # 检测vdbench目录
     if [ -d $VD_HOME ]
     then
-        echo "vdbench is in $VD_HOME" >> ${LOG_FILE}
+        sendLog "vdbench is in $VD_HOME" 1
     else
         echo "no vdbench！" >> ${LOG_FILE}
         tail ${LOG_FILE} -n 5
         exit 1
     fi
-     # 参数正确性
-    if [ $VD_TYPE == "fc" -o $VD_TYPE == "iscsi" -o $VD_TYPE == "nfs" -o $VD_TYPE == "cifs" -o $VD_TYPE == "Ldisk" ];then
+    # 参数正确性
+    ## type类型
+    if [ $VD_TYPE == "fc" -o $VD_TYPE == "iscsi" -o $VD_TYPE == "nfs" -o $VD_TYPE == "cifs" -o $VD_TYPE == "Ldisk" -o $VD_TYPE == "Lfile" ];then
         echo "know run type : $VD_TYPE" >> ${LOG_FILE}
     else
         echo "type : $VD_TYPE error! no match" >> ${LOG_FILE}
         usage
     fi
+
+    ## 判断参数类型
+    sendLog "check ELAPSED" 1
+    pdInt $ELAPSED
+    sendLog "check FILE_DEPTH" 1
+    pdInt $FILE_DEPTH
+    sendLog "check FILE_NUM" 1
+    pdInt $FILE_NUM
+    sendLog "check FILE_SIZE" 1
+    pdInt $FILE_SIZE
+    sendLog "check FILE_WIDTH" 1
+    pdInt $FILE_WIDTH
+    sendLog "check INTERVAL" 1
+    pdInt $INTERVAL
+    sendLog "check WARMUP" 1
+    pdInt $WARMUP
+    sendLog "check PAUSE" 1
+    pdInt $PAUSE
+
+    # 生成文件总大小
+    FILE_ALL_SIZE=$[$FILE_DEPTH**$FILE_WIDTH*$FILE_NUM*$FILE_SIZE*1024]
+    # 简单判断大小
+    if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
+        sendLog "check size" 1
+        pdInt `df |awk '$1~/[0-9]./{print $4;exit}'`
+        if [ $FILE_ALL_SIZE -ge `df |awk '$1~/[0-9]./{print $4;exit}'` ];then
+            sendLog "set size $FILE_ALL_SIZE ,bigger than nfs avail" 3
+            usage
+        fi
+    fi
+
 
 
     # 检测java
@@ -302,8 +372,8 @@ checkVal(){
         tail ${LOG_FILE} -n 5
         exit 1
     else
-        echo "`ls /bin | grep -w java`" >> ${LOG_FILE}
-        echo "java is good" >> ${LOG_FILE}
+        #echo "`ls /bin | grep -w java`" >> ${LOG_FILE}
+        sendLog "java is good" 1
 
     fi
 
@@ -390,7 +460,8 @@ getwd(){
                 FWDN="${i}t${j}h"
                 FWDL[$i]="${FWDL[$i]}${FWDN},"
                 FSDLN="(${FSDL[$j]})"
-                WD_LIST[$i]="fwd=$FWDN,fsd=$FSDLN,${ALL_TEST_LIST[$i]},host=hd$j"
+                count=$[$i*${#IP_LIST[*]}+$j]
+                WD_LIST[$count]="fwd=$FWDN,fsd=$FSDLN,${ALL_TEST_LIST[$i]},host=hd$j"
             done
         # printf "%s\n" "FWDL:${FWDL[*]}" >> ${LOG_FILE}
         else
@@ -438,7 +509,7 @@ getsd(){
         else
             for ((j=0;j<${#DN[*]};j++))
             do
-                count=`echo $i*${#DN[*]}+$j |bc`
+                count=$[$i*${#DN[*]}+$j]
                 SD_LIST[${#SD_LIST[*]}]="sd=sd$count,hd=hd$i,lun=${DN[$j]}"
             done
         fi
@@ -483,7 +554,7 @@ setHost(){
 setVol(){
 
     if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
-        printf "%s\n" "fsd=default,depth=$FILE_DEPTH,width=$FILE_WIDTH,files=$FILE_NUM,size=$FILE_SIZE,shared=yes,openflags=directio" > ${VD_FILE}/volume.vdb
+        printf "%s\n" "fsd=default,depth=${FILE_DEPTH},width=${FILE_WIDTH},files=${FILE_NUM},size=${FILE_SIZE}M,shared=yes,openflags=directio" > ${VD_FILE}/volume.vdb
     else
         printf "%s\n" "sd=default,openflags=o_direct" > ${VD_FILE}/volume.vdb
     fi
@@ -499,7 +570,7 @@ setVol(){
 setTerm(){
     printf "%s\n%s\n%s\n" "messagescan=no" "include=$VD_FILE/host.vdb" "include=$VD_FILE/volume.vdb" > ${VD_FILE}/run.vdb
 
-    for ((i=0;i<${#ALL_TEST_LIST[*]};i++))
+    for ((i=0;i<${#WD_LIST[*]};i++))
     do
         #printf "%s\n%s\n" ${WD_LIST[$i]} ${RD_LIST[$i]} >> ${VD_FILE}/run.vdb
         printf "%s\n" ${WD_LIST[$i]}  >> ${VD_FILE}/run.vdb
@@ -540,16 +611,31 @@ getDataMakePic(){
 }
 # 生成TotalReport.z来获取易读的total信息
 makeTotalReport(){
-    if [ `cat ${VD_OUT}"totals.html" | grep avg|wc -l` -ne ${#ALL_TEST_LIST_TITLE[*]} ] ; then
-         printf "\033[32m%s\033[0m\n" "output data error!" >> ${LOG_FILE}
-         tail ${LOG_FILE} -n 5
-         exit 1
+    if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
+        if [ `cat ${VD_OUT}"totals.html" | grep avg|awk '!(NR%2)' | wc -l` -ne ${#ALL_TEST_LIST_TITLE[*]} ] ; then
+            sendLog "output data error!" 3
+            tail ${LOG_FILE} -n 5
+            exit 1
+        fi
+        echo "**********Report***********" >> ${VD_OUT}/TotalReport.z
+        for((i=0;i<${#ALL_TEST_LIST_TITLE[*]};i++))
+        do
+            cat ${VD_OUT}"totals.html" | grep avg|awk '!(NR%2)' |awk -v ti=${ALL_TEST_LIST_TITLE[$i]} -v num=$i 'NR==num+1 {printf "Title:\033[36m%s\033[0m, iops:\033[32m%s\033[0m, bs:\033[35m%s\033[0m\n",ti,$3,$14}' >> ${VD_OUT}/TotalReport.z
+        done
+    else
+        if [ `cat ${VD_OUT}"totals.html" | grep avg|wc -l` -ne ${#ALL_TEST_LIST_TITLE[*]} ] ; then
+            sendLog "output data error!" 3
+            tail ${LOG_FILE} -n 5
+            exit 1
+        fi
+        echo "**********Report***********" >> ${VD_OUT}/TotalReport.z
+        for((i=0;i<${#ALL_TEST_LIST_TITLE[*]};i++))
+        do
+            cat ${VD_OUT}"totals.html" | grep avg |awk -v ti=${ALL_TEST_LIST_TITLE[$i]} -v num=$i 'NR==num+1 {printf "Title:\033[36m%s\033[0m, iops:\033[32m%s\033[0m, bs:\033[35m%s\033[0m\n",ti,$3,$4}' >> ${VD_OUT}/TotalReport.z
+        done
     fi
-    echo "**********Report***********" >> ${VD_OUT}/TotalReport.z
-    for((i=0;i<${#ALL_TEST_LIST_TITLE[*]};i++))
-    do
-        cat ${VD_OUT}"totals.html" | grep avg |awk -v ti=${ALL_TEST_LIST_TITLE[$i]} -v num=$i 'NR==num+1 {printf "Title:\033[36m%s\033[0m, iops:\033[32m%s\033[0m, bs:\033[35m%s\033[0m\n",ti,$3,$4}' >> ${VD_OUT}/TotalReport.z
-    done
+
+
 }
 
 # 生成图表依赖数据文件
@@ -623,7 +709,10 @@ vd-normal(){
         echo "continue"
     fi
 
-LINE=`getopt -o a --long help,brand:,mode:,type:,disk:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date:,command: -n 'Invalid parameter' -- "$@"`
+
+
+
+LINE=`getopt -o a --long help,brand:,mode:,type:,disk:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date:,command:,fdepth:,fwidth:,fnum:,fsize: -n 'Invalid parameter' -- "$@"`
 
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
@@ -656,11 +745,11 @@ while true;do
     --seekpct)
     SEEK=($2); shift 2;;
     --runtime)
-    ELAPSED=$2; shift 2;;
+    ELAPSED=$2;ONE_RD_COUNT=`echo $ELAPSED/$INTERVAL+$WARMUP/$INTERVAL+1|bc`; shift 2;;
     --interval)
-    INTERVAL=$2; shift 2;;
+    INTERVAL=$2;ONE_RD_COUNT=`echo $ELAPSED/$INTERVAL+$WARMUP/$INTERVAL+1|bc`; shift 2;;
     --warmup)
-    WARMUP=$2; shift 2;;
+    WARMUP=$2;ONE_RD_COUNT=`echo $ELAPSED/$INTERVAL+$WARMUP/$INTERVAL+1|bc`; shift 2;;
     --pause)
     PAUSE=$2; shift 2;;
     --file)
@@ -673,6 +762,14 @@ while true;do
     FILE_DATE=$2; shift 2;;
     --command)
     SSH_COMMAND=$2; shift 2;;
+    --fdepth)
+    FILE_DEPTH=$2; shift 2;;
+    --fwidth)
+    FILE_WIDTH=$2; shift 2;;
+    --fnum)
+    FILE_NUM=$2; shift 2;;
+    --fsize)
+    FILE_SIZE=$2; shift 2;;
     --)
     shift;break;;
     *)

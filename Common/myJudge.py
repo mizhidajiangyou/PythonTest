@@ -1,10 +1,10 @@
-from Config.currency import retryCount,currencylog
+from Config.currency import retryCount,currencyLog
 from Common.timeOperate import *
 from Common.openDriver import openWebdriverMax
 from time import sleep
 
 # 实例化log模块
-judgelog = currencylog
+judgelog = currencyLog
 
 
 def judgeOS(func, bak):
