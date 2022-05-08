@@ -1,4 +1,4 @@
-from Config.currency import retryCount, currencylog, ErrorMax,timeSleep, TESTPATH
+from Config.currency import retryCount, currencyLog, ErrorMax,timeSleep, TESTPATH
 from Common.timeOperate import returnDayTimePng
 from Common.openDriver import openWebdriverMax,openWebdriverNoUI
 from Common.myJudge import judgeFindWay
@@ -6,7 +6,7 @@ from time import sleep
 from Common.myLog import zLog
 
 # 实例化log模块
-elementLog = currencylog
+elementLog = currencyLog
 
 def retryMessage(message, way, surplus, dr):
 	"""

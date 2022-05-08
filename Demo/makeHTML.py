@@ -3,14 +3,14 @@
 import json
 
 from Common.timeOperate import returnYearMounthDayFile
-from Config.currency import PERFORMANCEPATH, currencylog, TESTPATH,TESTDATAPATH
+from Config.currency import PERFORMANCEPATH, currencyLog, TESTPATH,TESTDATAPATH
 from Config.regularExpression import jsRegularExpression
 from Common.fileOperate import makeHtmlRport,readFileAndMakeString
 from Common.reOperate import reSub
 
 import os
 
-makeLog = currencylog
+makeLog = currencyLog
 
 if __name__ == "__main__":
 	orPath = PERFORMANCEPATH
