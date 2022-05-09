@@ -1,6 +1,10 @@
 import logging
 import datetime
-
+from os import getcwd,path,makedirs
+pwd = getcwd()
+father_path = path.dirname(pwd)
+if path.exists(father_path + '/Report/MyLogs/') == False:
+    makedirs(father_path + '/Report/MyLogs/')
 
 class zLog:
 	def __init__(self):

@@ -11,9 +11,14 @@
 
 [磁盘性能自动化测试](#磁盘性能自动化测试)
 
+[PC端自动化测试](#PC端自动化测试)
+
 [测试服务器](#测试服务器)
 
 ## 正常使用
+* docker pull xxxx(准备中)
+
+* 执行Shell/z-env.sh 以完成linux场景下的环境变量配置
 
 * 在TestCase_Pytest下创建test开头的Py文件
 
@@ -50,11 +55,6 @@ Firefox：https://github.com/mozilla/geckodriver/releases
 `pip install Django -i https://pypi.tuna.tsinghua.edu.cn/simple`
 
 ## 环境
-
-### 环境变量
-`parent_path = os.path.dirname(sys.path[0]) 
-if parent_path not in sys.path:
-    sys.path.append(parent_path)`
 
 ### log支持中文
 修改FileHandler => def __init__(self, filename, mode='a', encoding='utf-8', delay=False)
@@ -101,14 +101,74 @@ elementOperate.py
 ### 模块构成
 
 ## 磁盘性能自动化测试 
+目前支持fio和vdbench2种工具自动化测试
 
 ### 模块构成
-Performance、Shell、Report/DiskPerformance、Common、Demo/DiskPerformanceReport
+Performance、Shell/fio、Shell/vdbench、Report/DiskPerformance、Common、Demo/DiskPerformanceReport
 
 ### 核心模块
 
+#### vdbench自动测试模块
+Shell/vdbench/run-vdbench.sh
+支持在linux任意目录运行该脚本，可多客户机运行。
+
+##### 功能及参数说明
+
+    <--brand| --mode| --type| --ip> \n
+    (--Ldisk)\n
+    [--size| --rdpct| --block| --fileio| --seekpct] \n
+    [--runtime| --interval| --warmup | --pause] \n
+    [--file| --out| --log| --date] \n
+    brand     <string>            disk manufacturer;default SEAGATE
+    mode      <int>               whether which run mode you test;default 2
+              *   0               scan and test
+              *   1               test and make report
+              *   2               nohup run vdbench &
+              *   3               only use your output to make picture report
+              *   4               ssh no password
+              *   5               use parameter \"command\" to run bash in all client
+    type      <string>            whether which volume type you test;default fc
+              *   fc              must install device-mapper-multipath(multipath-tools)
+              *   iscsi           must install iscsi
+              *   nfs             must install nfs-utils
+              *   cifs            default support
+              *   Ldisk           test every client local disk whitch you  appoint
+              *   Lfile           test every client local file system  whitch you  appoint
+    disk      <\"array\">           when the type is Ldisk must to define;no default.
+    ip        <\"array\">           all ip list which you want to test;default ssh ip
+    size      <int>               disk or file size;default 500
+    rdpct     <\"array\">           percentage of read ;default \"0 100\"
+    block     <\"array\">           test block size ;default \"4k 1M\"
+    fileio    <\"array\">           test fileio ;default \"random sequential\"
+    seekpct   <\"array\">           test random ratio ;default \"100 0\"
+    runtime   <int>               test runtime(s) ;default 300
+    interval  <int>               print interval(s) ;default 1
+    warmup    <int>               hot start time(s) ;default 30
+    pause     <int>               pause time(s) ;default 30
+    fdepth    <int>               fsd default file depth
+    fwidth    <int>               fsd default file width
+    fnum      <int>               fsd default file num
+    fsize     <int>               fsd default file size (MB)
+    file      <\"path\">            *.vbd will put in;default pwd
+    out       <\"path\">            vdbench out put will put in;default pwd/vd-output
+    log       <\"path\">            run logs will put in;default same with file
+    date      <date>              date for test ,like 220101;default date '+%y%m%d'
+    command   <string>            the command in ssh \"ip\" bash \"command\"
+    
+#### 测试模块
+Shell/zfioPerformance.sh
+仅支持在本目录运行，待优化项较多，目前仅支持单机运行。
+
+##### 功能及参数说明
+
+    $1 参数1位类型
+    $2 参数2为名称
+    $3 参数3设定执行方式
+    $4 测试磁盘是需使用参数4表示盘符
+
 #### 报告生成模块
 Common/fileOperate.py、reOperate.py
+目前仅支持fio报告
 
 ##### 功能说明
 * 根据地址、本次测试数据，生成HTML、JS、CSS（基于ElementPlus）
@@ -118,6 +178,8 @@ Common/fileOperate.py、reOperate.py
 #### 图片生成模块
 Performance/bar.py
 Performance/makelines.py
+支持fio（利用sysstat获取实时io；）vdbench（工具自身统计实时io）2种工具测试场景下，精确到s的IO折线图生成与最终测试结果的柱状图、折线图生成。
+部分效果图见Report/DiskPerformance/2021-05-26/
 效果：
 ![Image text](https://github.com/mizhidajiangyou/myTest/blob/performance/Report/DiskPerformance/2021-05-26/linepng-IOPS-2021-05-21.png)
 
@@ -129,12 +191,17 @@ Performance/IOLines.py
 ##### 柱状图
 
 ##### 折线图
-根据生成的max文件
 
-#### 测试模块
-Shell/zfioPerformance.sh
+## PC端自动化测试
 
-##### 功能及参数说明
+### 模块构成
+
+### 核心模块
+
+#### 元素操作模块
+
+
+##### 功能说明
 
 
 ## 测试服务器
