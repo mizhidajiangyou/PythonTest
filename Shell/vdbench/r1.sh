@@ -114,6 +114,7 @@ usage(){
     e.g.
     --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/z/aa/\" --out \"/root/z/outa/\" --log  \"/root/z/log/\"
     --size 666 --runtime 604800 --seekpct 100 --rdpct 70 --block 2M
+    --mode 1 --type nfs --fdepth 3 --fdepth 5 --fnum 32 --fsize 1
     --type Ldisk --disk \"sdb sdc\"
     --command \"echo '- - -'|tee /sys/class/scsi_host/*/scan -a\"
     --command \"iscsiadm -m discovery -t st -p xx.xx.xx.xx && iscsiadm -m node --login -p xx.xx.xx.xx \"
@@ -127,11 +128,11 @@ usage(){
 pdInt(){
     expr $1 + 0 &>/dev/null
     if [  $? -ne 0 ];then
-        sendLog "type not int!" $LINEON 3
+        sendLog "type not int!"  3
         usage
         exit 1
     fi
-
+    sendLog "Correct type!" 1
 }
 # 日志管理
 sendLog(){
@@ -161,11 +162,11 @@ pingIP(){
     while [ $a -eq 1 ];do
     line=`ping -c 1 -W 1 -s 1 $1 | grep "100% packet loss" | wc -l`
         if [ $line -eq 0 ];then
-            echo -e "ping $1 \033[32mok\033[0m" >> ${LOG_FILE}
+            sendLog "ping $1 ok" 1
             a=0
             return 0
         else
-            echo "$1 not ok try again after 3s!" >> ${LOG_FILE}
+            sendLog "$1 not ok try again after 3s!" 1
         fi
             sleep 3
     done
@@ -351,7 +352,7 @@ checkVal(){
     pdInt $PAUSE
 
     # 生成文件总大小
-    FILE_ALL_SIZE=$[$FILE_DEPTH**$FILE_WIDTH*$FILE_NUM*$FILE_SIZE*1024]
+    FILE_ALL_SIZE=$[$FILE_DEPTH**$FILE_WIDTH*$FILE_NUM*$FILE_SIZE*1024*${#IP_LIST[*]}]
     # 简单判断大小
     if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
         sendLog "check size" 1
@@ -502,7 +503,7 @@ getsd(){
             do
                 FSDN="${i}hd${j}"
                 FSDL[$i]="${FSDL[$i]}${FSDN},"
-                SD_LIST[${#SD_LIST[*]}]="fsd=$FSDN,anchor=${FSD[$j]}"
+                SD_LIST[${#SD_LIST[*]}]="fsd=$FSDN,anchor=${FSD[$j]}/$FSDN"
             done
             # printf "%s\n" "FSDL:${FSDL[*]}" >> ${LOG_FILE}
 
@@ -595,19 +596,42 @@ runVdb(){
 }
 # 绘制实时IO图，并生成total.sin来简化total内容
 getDataMakePic(){
+    # 生成最简报告
+    awk '$3~/^[0-9]*\./{printf "%s\n","block:"$5"--iops:"$3"--bs:"$4"--resp:"$7}' $VD_OUT/totals.html  > $VD_OUT/total.sin
+
+    # 判断python文件是否存在
+    if [ -f $ZHOME/Performance/IOLine.py ]
+    then
+        sendLog "python file is ok" 1
+    else
+        sendLog "no python file!" 3
+        sendLog "run --mode 3 --out `pwd`/ --type $VD_TYPE;to only make pic again." 0
+        return 1
+    fi
+    # 绘图
+    sendLog "run make pic" 1
     for ((i=0;i<${#ALL_TEST_LIST_TITLE[*]};i++))
     do
+
         data_name="$VD_OUT/${ALL_TEST_LIST_TITLE[$i]}"
-        f_n=`echo $ONE_RD_COUNT*$i+1|bc`
-        l_n=`echo $ONE_RD_COUNT*$i+$ONE_RD_COUNT|bc`
-        awk '$3~/^[0-9]*\./{print $3}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.iops
-        awk '$3~/^[0-9]*\./{print $4}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.bs
+        # f_n=`echo $ONE_RD_COUNT*$i+1|bc`
+        # l_n=`echo $ONE_RD_COUNT*$i+$ONE_RD_COUNT|bc`
+        #awk '$3~/^[0-9]*\./{print $3}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.iops
+        #awk '$3~/^[0-9]*\./{print $4}' $VD_OUT/summary.html | awk "NR>=$f_n && NR<=$l_n" > $data_name.bs
+        awk "/RD=rd$i/,/avg/{print}" $VD_OUT/summary.html |awk '$1~/^[0-9]/{print $3}' > $data_name.iops
+
+        if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ];then
+            awk "/RD=rd$i/,/avg/{print}" $VD_OUT/summary.html |awk '$1~/^[0-9]/{print $14}' > $data_name.bs
+        else
+            awk "/RD=rd$i/,/avg/{print}" $VD_OUT/summary.html |awk '$1~/^[0-9]/{print $4}' > $data_name.bs
+        fi
         cp $ZHOME/Performance/IOLine.py IOLine.py
         sed -i "s!LINE_TITLE!${ALL_TEST_LIST_TITLE[$i]}!g" IOLine.py
         sed -i "s!SAVE_PATH!$VD_OUT!g" IOLine.py
         python3  IOLine.py
     done
-    awk '$3~/^[0-9]*\./{printf "%s\n","block:"$5"--iops:"$3"--bs:"$4"--resp:"$7}' $VD_OUT/totals.html  > $VD_OUT/total.sin
+
+
 }
 # 生成TotalReport.z来获取易读的total信息
 makeTotalReport(){
@@ -782,34 +806,38 @@ done
 case $MODE in
 0)
     vd-normal
+    sendLog "vd-normal fi" 1
     ;;
 1)
     vd-normal
+    sendLog "vd-normal fi" 1
     ;;
 
 2)
     vd-createFile
-    echo -e "create file \033[32mok\033[0m!" >> ${LOG_FILE}
+    sendLog "create vdfile fi" 1
     runVdb-nohup
+    sendLog "nohup run fi" 1
     ;;
 3)
-    checkVal
-    echo -e "checkval \033[32mok\033[0m" >> ${LOG_FILE}
-    ip_main
+    choiceList
+    getDataMakePic
+    sendLog "makePic fi" 1
     ;;
 4)
     checkVal
-    echo -e "checkval \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "checkval fi" 1
     ip_main
-    echo -e "no passwd \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "no passwd fi" 1
     ;;
 5)
     runBash
-    echo -e "run ssh ok!" >> ${LOG_FILE}
+    sendLog "run ssh ok!" 1
     ;;
+
 *)
     echo "no this mode" ;exit 127;;
 esac
 
 
-tail ${LOG_FILE} -n 20
+tail $LOG_FILE -n 20
