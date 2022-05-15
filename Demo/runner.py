@@ -1,10 +1,16 @@
-import pytest
-import os
+import pytest, os, datetime
+from Common.timeOperate import returnYearMounthDay
 
-class Test_runner():
-	if __name__ == '__main__':
-		# 生成json
-		pytest.main(['-s', '-q', '../TestCase_Pytest', '--alluredir', '../Report/Allure/results'])
+if __name__ == '__main__':
 
-		# 转换为html
-		os.system(r'allure generate --clean ../Report/Allure/results -o ../Report/Allure/reports')
+	pwd = os.getcwd()
+	father_path = os.path.dirname(pwd)
+	now_date = returnYearMounthDay()
+	out_file = father_path + '/Report/Allure/' + now_date + '/'
+	if os.path.exists(out_file) == False:
+		os.makedirs(out_file)
+
+	# 生成json
+	pytest.main(['-s', '-q', '../TestCase_Pytest', '--alluredir', out_file + 'results'])
+	# 转换为html
+	os.system(r'allure generate --clean ' + out_file + 'results/ -o ' + out_file + 'reports')
