@@ -113,6 +113,8 @@ Shell/vdbench/run-vdbench.sh
 支持在linux任意目录运行该脚本，可多客户机运行。
 
 ##### 功能及参数说明
+./run-vdbench.sh --help 查看帮助信息，以修改自动生成的vdbench测试脚本配置。
+默认自动生成FC的vdbench脚本，并自动执行标准化的4K、1M，随机、顺序，读、写性能测试。
 
     <--brand| --mode| --type| --ip> \n
     (--Ldisk)\n
@@ -155,7 +157,7 @@ Shell/vdbench/run-vdbench.sh
     date      <date>              date for test ,like 220101;default date '+%y%m%d'
     command   <string>            the command in ssh \"ip\" bash \"command\"
     
-#### 测试模块
+#### FIO自动化测试模块
 Shell/zfioPerformance.sh
 仅支持在本目录运行，待优化项较多，目前仅支持单机运行。
 
