@@ -1,10 +1,12 @@
 import logging
 import datetime
-from os import getcwd,path,makedirs
+from os import getcwd, path, makedirs
+
 pwd = getcwd()
 father_path = path.dirname(pwd)
 if path.exists(father_path + '/Report/MyLogs/') == False:
-    makedirs(father_path + '/Report/MyLogs/')
+	makedirs(father_path + '/Report/MyLogs/')
+
 
 class zLog:
 	def __init__(self):
@@ -60,13 +62,19 @@ class zLog:
 		# 输出格式设置
 		log1.setFormatter(self.formatter)
 		log2.setFormatter(self.formatter)
+		'''
+		简单排查python logging库，按以上方式使用存在以下现象：
+		* 利用addHandler 往handlers数组中添加hdlr，再次实例化logging.getLogger()并不会清楚这个数组
+		* 简单增加判断if len(logger.handlers) == 0 : 再进行addHandler操作
+		'''
 		# 将log1和2加入流中
-		self.logger.addHandler(log1)
-		self.logger.addHandler(log2)
+		if len(self.logger.handlers) == 0:
+			self.logger.addHandler(log1)
+		if len(self.logger.handlers) == 1:
+			self.logger.addHandler(log2)
 
 
-
-if __name__=='__main__':
+if __name__ == '__main__':
 	log = zLog()
 	log.logger.debug('debug test')
 	log.logger.info('info test')
