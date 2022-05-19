@@ -68,9 +68,9 @@ class zLog:
 		* 简单增加判断if len(logger.handlers) == 0 : 再进行addHandler操作
 		'''
 		# 将log1和2加入流中
-		if len(self.logger.handlers) == 0:
+		if len(self.logger.handlers) == 2:
 			self.logger.addHandler(log1)
-		if len(self.logger.handlers) == 1:
+		if len(self.logger.handlers) == 3:
 			self.logger.addHandler(log2)
 
 
