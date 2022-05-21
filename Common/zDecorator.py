@@ -6,7 +6,7 @@ from Common.timeOperate import returnYearMounthDay
 decoratorLog = currencyLog
 
 
-def timer(**kwargs):
+def timer(*args,**kwargs):
 	if 'level' in kwargs:
 		level = kwargs["level"]
 	else:
@@ -43,11 +43,11 @@ def timer(**kwargs):
 	return wrapper
 
 
-@timer()
-def do(work):
-	time.sleep(1)
-	print(work)
 
 
 if __name__ == "__main__":
+	@timer()
+	def do(work):
+		time.sleep(1)
+		print(work)
 	do("ccccccc")
