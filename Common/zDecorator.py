@@ -6,11 +6,16 @@ from Common.timeOperate import returnYearMounthDay
 decoratorLog = currencyLog
 
 
-def timer(level, **kwargs):
+def timer(**kwargs):
+	if 'level' in kwargs:
+		level = kwargs["level"]
+	else:
+		level = ""
 	if 'path' in kwargs:
 		decoratorLog.zsave = kwargs['path']
 	else:
 		decoratorLog.zsave = '../Report/MyLogs/' + returnYearMounthDay() + '.save'
+
 	@wrapt.decorator
 	def wrapper(wrapped, instance, args, kwargs):
 		start_time = time.time()
@@ -38,7 +43,7 @@ def timer(level, **kwargs):
 	return wrapper
 
 
-@timer(level="SAVE",path='../Report/MyLogs/' + returnYearMounthDay()+ '.save22')
+@timer()
 def do(work):
 	time.sleep(1)
 	print(work)
