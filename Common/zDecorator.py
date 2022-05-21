@@ -6,7 +6,7 @@ from Common.timeOperate import returnYearMounthDay
 decoratorLog = currencyLog
 
 
-def timer(*args,**kwargs):
+def timer(*args, **kwargs):
 	if 'level' in kwargs:
 		level = kwargs["level"]
 	else:
@@ -43,6 +43,23 @@ def timer(*args,**kwargs):
 	return wrapper
 
 
+def tryer():
+	@wrapt.decorator
+	def wrapper(wrapped, instance, args, kwargs):
+		message = "do func {}() ".format(wrapped.__name__)
+		try:
+			wrapped(*args, **kwargs)
+			decoratorLog.logger.info(message + "successful!")
+		except OSError:
+			decoratorLog.logger.info(message + "os error!")
+		except IOError:
+			decoratorLog.logger.info(message + "io error!")
+		except FileNotFoundError:
+			decoratorLog.logger.info(message + "file not found!")
+		except Exception:
+			decoratorLog.logger.info(message + "Exception!")
+
+	return wrapper
 
 
 if __name__ == "__main__":
@@ -50,4 +67,14 @@ if __name__ == "__main__":
 	def do(work):
 		time.sleep(1)
 		print(work)
+
+
 	do("ccccccc")
+
+
+	@tryer()
+	def aa():
+		print("aa")
+
+
+	aa()
