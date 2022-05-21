@@ -6,10 +6,25 @@ pwd = getcwd()
 father_path = path.dirname(pwd)
 if path.exists(father_path + '/Report/MyLogs/') == False:
 	makedirs(father_path + '/Report/MyLogs/')
+# 日志等级
+'''
+	CRITICAL = 50
+	FATAL = CRITICAL
+	ERROR = 40
+	WARNING = 30
+	WARN = WARNING
+	INFO = 20
+	DEBUG = 10
+	NOTSET = 0
+'''
+LEVEL = 10
 
 
 class zLog:
 	def __init__(self):
+		global LEVEL
+		self.level = LEVEL
+		self.zsave = ""
 		# 获取当前时间
 		nowTime = datetime.datetime.now()
 		# 实例化日志
@@ -35,7 +50,7 @@ class zLog:
 		# 日志输出位置
 		self.path = '../Report/MyLogs/' + self.zTime + '.log'
 		# 日志等级
-		self.logger.setLevel(logging.INFO)
+		self.logger.setLevel(self.level)
 		'''
 		StreamHandler: 
 			能够将日志信息输出到sys.stdout, sys.stderr 或者类文件对象（更确切点，就是能够支持write()和flush()方法的对象）。
@@ -55,10 +70,10 @@ class zLog:
 		'''
 		# 日志文件输出
 		log1 = logging.FileHandler(self.path, mode='a')
-		log1.setLevel(logging.INFO)
+		log1.setLevel(self.level)
 		# 控制台输出
 		log2 = logging.StreamHandler()
-		log2.setLevel(logging.INFO)
+		log2.setLevel(self.level)
 		# 输出格式设置
 		log1.setFormatter(self.formatter)
 		log2.setFormatter(self.formatter)
@@ -68,11 +83,32 @@ class zLog:
 		* 简单增加判断if len(logger.handlers) == 0 : 再进行addHandler操作
 		'''
 		# 将log1和2加入流中
-		if len(self.logger.handlers) == 2:
+		if len(self.logger.handlers) <= 0:
 			self.logger.addHandler(log1)
-		if len(self.logger.handlers) == 3:
+		else:
+			self.logger.handlers[0]=log1
+		if len(self.logger.handlers) <= 1:
 			self.logger.addHandler(log2)
+		else:
+			self.logger.handlers[1]=log2
 
+	# self.logger.addHandler(log1)
+	# self.logger.addHandler(log2)
+
+	def saveData(self):
+		# 保存位置
+		if self.zsave == "":
+			self.zsave = '../Report/MyLogs/' + self.zTime + '.save'
+		log3 = logging.FileHandler(self.zsave, mode='a')
+		log3.setLevel(self.level)
+		print(len(self.logger.handlers))
+		if len(self.logger.handlers) <= 2:
+			self.logger.addHandler(log3)
+		else:
+			self.logger.handlers[2]=log3
+
+	def delsave(self):
+		del self.logger.handlers[2]
 
 if __name__ == '__main__':
 	log = zLog()
@@ -81,3 +117,11 @@ if __name__ == '__main__':
 	log.logger.warning('warning test')
 	log.logger.error('error test')
 	log.logger.critical('critical test')
+	log.saveData()
+	log.logger.debug('debug test')
+	log2 = zLog()
+	log2.logger.debug('debug1 test')
+
+	log3 = zLog()
+	log3.logger.debug('debug2 test')
+	log2.delsave()
