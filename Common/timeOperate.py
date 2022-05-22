@@ -5,6 +5,10 @@ import datetime
 import os
 from time import sleep
 
+def returnMySqlDate():
+	date = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+	return date
+
 def returnAlldate():
 	date = str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
 	return date

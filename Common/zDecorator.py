@@ -3,7 +3,7 @@ import time, wrapt
 from Config.currency import currencyLog
 from Common.timeOperate import returnYearMounthDay
 
-decoratorLog = currencyLog
+_decoratorLog = currencyLog
 
 
 def timer(*args, **kwargs):
@@ -12,9 +12,9 @@ def timer(*args, **kwargs):
 	else:
 		level = ""
 	if 'path' in kwargs:
-		decoratorLog.zsave = kwargs['path']
+		_decoratorLog.zsave = kwargs['path']
 	else:
-		decoratorLog.zsave = '../Report/MyLogs/' + returnYearMounthDay() + '.save'
+		_decoratorLog.zsave = '../Report/MyLogs/' + returnYearMounthDay() + '.save'
 
 	@wrapt.decorator
 	def wrapper(wrapped, instance, args, kwargs):
@@ -24,40 +24,40 @@ def timer(*args, **kwargs):
 		d_time = end_time - start_time
 		message = "do func {}() runing time is {}".format(wrapped.__name__, d_time)
 		if level == "DEBUG":
-			decoratorLog.logger.debug(message)
+			_decoratorLog.logger.debug(message)
 		elif level == "INFO":
-			decoratorLog.logger.info(message)
+			_decoratorLog.logger.info(message)
 		elif level == "WARING":
-			decoratorLog.logger.warning(message)
+			_decoratorLog.logger.warning(message)
 		elif level == "ERROR":
-			decoratorLog.logger.error(message)
+			_decoratorLog.logger.error(message)
 		elif level == "CRITICAL":
-			decoratorLog.logger.critical(message)
+			_decoratorLog.logger.critical(message)
 		elif level == "SAVE":
 
-			decoratorLog.saveData()
-			decoratorLog.logger.info(d_time)
+			_decoratorLog.saveData()
+			_decoratorLog.logger.info(d_time)
 		else:
-			decoratorLog.logger.info(message)
+			_decoratorLog.logger.info(message)
 
 	return wrapper
 
 
-def tryer():
+def tryer(*args, **kwargs):
 	@wrapt.decorator
 	def wrapper(wrapped, instance, args, kwargs):
 		message = "do func {}() ".format(wrapped.__name__)
 		try:
 			wrapped(*args, **kwargs)
-			decoratorLog.logger.info(message + "successful!")
+			_decoratorLog.logger.debug(message + "successful!")
 		except OSError:
-			decoratorLog.logger.info(message + "os error!")
+			_decoratorLog.logger.error(message + "os error!")
 		except IOError:
-			decoratorLog.logger.info(message + "io error!")
+			_decoratorLog.logger.error(message + "io error!")
 		except FileNotFoundError:
-			decoratorLog.logger.info(message + "file not found!")
+			_decoratorLog.logger.error(message + "file not found!")
 		except Exception:
-			decoratorLog.logger.info(message + "Exception!")
+			_decoratorLog.logger.error(message + "Exception!")
 
 	return wrapper
 
