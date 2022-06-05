@@ -1,5 +1,5 @@
 # 装饰器，显得高级
-import time, wrapt
+import time, wrapt, os
 from Config.currency import currencyLog
 from Common.timeOperate import returnYearMounthDay
 
@@ -58,6 +58,21 @@ def tryer(*args, **kwargs):
 			_decoratorLog.logger.error(message + "file not found!")
 		except Exception:
 			_decoratorLog.logger.error(message + "Exception!")
+
+	return wrapper
+
+
+def pider(*args, **kwargs):
+	@wrapt.decorator
+	def wrapper(wrapped, instance, args, kwargs):
+		message1 = "the func {}() pid: ".format(wrapped.__name__) + str(os.getpid())
+
+		message2 = "the func {}() ppid: ".format(wrapped.__name__) + str(os.getppid())
+
+		_decoratorLog.logger.debug(message1)
+
+		_decoratorLog.logger.debug(message2)
+		return wrapped(*args, **kwargs)
 
 	return wrapper
 

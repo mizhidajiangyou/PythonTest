@@ -18,7 +18,7 @@
 ## 正常使用
 * docker pull xxxx(准备中)
 
-* 执行Shell/z-env.sh 以完成linux场景下的环境变量配置
+* 执行Shell/z-env.sh 以完成linux场景下的环境变量配置,windows场景下自行配置ZHOME系统变量
 
 * 在TestCase_Pytest下创建test开头的Py文件
 

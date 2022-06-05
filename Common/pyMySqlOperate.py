@@ -1,65 +1,3 @@
-import pymysql
-from Common.zDecorator import tryer
-from Config.mysqlConfig import rootCon
-
-
-def commitSql(sql, avgs, db, cursor):
-	try:
-		cursor.execute(sql, avgs)
-		db.commit()
-	except:
-		db.rollback()
-
-
-config = {'host': 'localhost',
-		  'port': 3306,
-		  'user': 'root',
-		  'passwd': 'P@ssw0rd',
-		  'charset': 'utf8'
-		  # 'db' : '数据库名'
-		  }
-
-conn = pymysql.connect(**config)
-cursor = conn.cursor()
-sql = "CREATE DATABASE IF NOT EXISTS db_name"
-cursor.execute(sql)
-
-print(cursor)
-
-cursor.close()
-conn.close()
-
-config['db'] = 'db_name'
-
-db = pymysql.connect(**config)
-
-# cursor=pymysql.cursors.DictCursor 设置返回值为字典
-cursor = db.cursor(cursor=pymysql.cursors.DictCursor)
-# cursor = db.cursor()
-
-sql = 'CREATE TABLE IF NOT EXISTS z_performance_date1(z_id INT UNSIGNED AUTO_INCREMENT,remarks VARCHAR(100),enter_date DATE,PRIMARY KEY ( z_id ))ENGINE=InnoDB DEFAULT CHARSET=utf8;'
-cursor.execute(sql)
-
-for i in range(0, 1):
-	sql = "insert into z_performance_date1 (enter_date,remarks) values (%s,%s)"
-	avgs = ('2022-05-19 11:35:02', i)
-	commitSql(sql, avgs, db, cursor)
-	# cursor.execute(sql,('2022-05-19 11:35:02',i))
-
-	db.commit()
-
-sql = "SELECT count(*) from z_performance_date1"
-cursor.execute(sql)
-print(cursor.fetchone()['count(*)'])
-print(type(cursor.fetchone()))
-# print(cursor.fetchall())
-# print(cursor.fetchone())
-
-cursor.close()
-db.close()
-
-
-
 import pymysql, time
 from Common.zDecorator import tryer, timer
 from Config.currency import currencyLog
@@ -73,9 +11,9 @@ default_db_sql = "CREATE DATABASE IF NOT EXISTS "
 default_table_sql = "CREATE TABLE IF NOT EXISTS "
 default_table_value = "(z_id INT UNSIGNED AUTO_INCREMENT,remarks VARCHAR(100),enter_date DATE,PRIMARY KEY ( z_id ))ENGINE=InnoDB DEFAULT CHARSET=utf8;"
 default_table_insert = "insert into {} (enter_date,remarks) values (%s,%s)"
-default_table_delete = ""
-default_table_update = ""
-default_table_select = ""
+default_table_delete = "delete from {} where z_id=%s"
+default_table_update = "update {} set enter_date=\"%s\",remarks=\"%s\" where z_id=%s"
+default_table_select = "select count(*) from {}"
 
 config = {'host': 'localhost',
 		  'port': 3306,
@@ -157,6 +95,10 @@ class zMySqlTable():
 	def __init__(self, cursor: classmethod, table_name: str = None, *args, **kwargs):
 		# 日志
 		self._log = _zMySqlLog
+		# 通用sql语句，用于提交，非增删改查专用
+		self.a_sql = ""
+		self.one = {}
+		self.more = {}
 		# 表名
 		if table_name:
 			self.table_name = table_name
@@ -198,22 +140,56 @@ class zMySqlTable():
 			self._log.logger.error("check table error!")
 			exit(1)
 
+	@tryer()
 	@timer(level="DEBUG")
-	def do_insert(self, avgs: tuple):
-		self.cursor.execute(self.table_insert, avgs)
+	def do_insert(self, data_options: tuple):
+		self._log.logger.debug("do insert,sql=" + self.table_insert)
+		self.cursor.execute(self.table_insert, data_options)
 
 	@timer(level="DEBUG")
-	def do_insert_many(self, avgs: tuple):
-		self.cursor.executemany(self.table_insert, avgs)
+	def do_insert_many(self, data_options: tuple):
+		self.cursor.executemany(self.table_insert, data_options)
 
-	def do_delete(self):
-		pass
+	@timer(level="DEBUG")
+	def do_delete(self, data_options: tuple):
+		self._log.logger.debug("do delete,sql=" + self.table_delete % data_options)
+		self.cursor.execute(self.table_delete % data_options)
 
-	def do_update(self):
-		pass
+	@timer(level="DEBUG")
+	def do_update(self, data_options: tuple):
+		self._log.logger.debug("do update,sql=" + self.table_update % data_options)
+		self.cursor.execute(self.table_update % data_options)
 
+	@timer(level="DEBUG")
 	def do_select(self):
-		pass
+		self._log.logger.debug("do select,sql=" + self.table_select)
+		self.cursor.execute(self.table_select)
+
+	@timer(level="DEBUG")
+	def do_one(self, data_options: tuple):
+		self._log.logger.debug("do one，sql=" + self.a_sql % data_options)
+		self.cursor(self.a_sql % data_options)
+
+	@timer(level="DEBUG")
+	def do_many(self, data_options: tuple):
+		self._log.logger.debug("do many,sql=" + self.a_sql % data_options)
+		self.cursor.executemany(self.a_sql % data_options)
+
+	@timer(level="DEBUG")
+	def show_one(self):
+		self.one = self.cursor.fetchone()
+		return self.one
+
+	@timer(level="DEBUG")
+	def show_more(self):
+		self.more = self.cursor.fetchall()
+		return self.more
+
+	@timer(level="DEBUG")
+	@tryer()
+	def check_table(self):
+		self.check_sql = self.table_sql + self.table_prefix + self.table_name + self.table_value
+		self.cursor.execute(self.check_sql)
 
 
 if __name__ == "__main__":
@@ -223,13 +199,20 @@ if __name__ == "__main__":
 
 	t1 = zMySqlTable(cursor=z1.cursor)
 
-	for i in range(0, 100):
-		t1.do_insert_many((('2022-05-19 11:35:02', i),('2022-05-20 11:35:02', i)))
+	for i in range(0, 3):
+		t1.do_insert_many((('2022-05-19 11:35:02', i), ('2022-05-22 11:35:02', i)))
 	z1.commit_change()
+
+	t1.do_update(('2009-05-01 11:35:02', 'test update zzzzz', '3'))
+	z1.commit_change()
+
+	t1.do_delete('12')
+	z1.commit_change()
+
+	t1.table_select = "select * from {}".format(t1.table_prefix + t1.table_name)
+	t1.do_select()
+	t1.show_more()
+	# print(t1.more)
 
 	del z1
 # print(z1.db_name)
-
-
-
-
