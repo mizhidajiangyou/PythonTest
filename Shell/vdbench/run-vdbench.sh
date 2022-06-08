@@ -106,13 +106,14 @@ usage(){
     fwidth    <int>               fsd default file width
     fnum      <int>               fsd default file num
     fsize     <int>               fsd default file size (MB)
-    file      <\"path\">            *.vbd will put in;default pwd
+    file      <\"path\">            *.vbd will put in;default pwd/date;
+                                    *it is recommended to modify this option only。
     out       <\"path\">            vdbench out put will put in;default pwd/vd-output
     log       <\"path\">            run logs will put in;default same with file
     date      <date>              date for test ,like 220101;default date '+%y%m%d'
     command   <string>            the command in ssh \"ip\" bash \"command\"
     e.g.
-    --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/z/aa/\" --out \"/root/z/outa/\" --log  \"/root/z/log/\"
+    --mode 1 --type fc --ip \"192.168.8.81 192.168.8.82\" --file \"/root/z/aa/\"
     --size 666 --runtime 604800 --seekpct 100 --rdpct 70 --block 2M
     --mode 1 --type nfs --fdepth 3 --fdepth 5 --fnum 32 --fsize 1
     --type Ldisk --disk \"sdb sdc\"
@@ -166,7 +167,7 @@ pingIP(){
             a=0
             return 0
         else
-            sendLog "$1 not ok try again after 3s!" 1
+            sendLog "$1 not ok try again after 3s!" 3
         fi
             sleep 3
     done
@@ -178,9 +179,9 @@ checkIP(){
         pingIP $i
     done
     if [ `ip a | grep $MY_IP |wc -l` -eq 1 ];then
-        echo "MY_IP is $MY_IP" >> ${LOG_FILE}
+        sendLog "MY_IP is $MY_IP" 1
     else
-        echo -e "$MY_IP not \033[32mok\033[0m !" >> ${LOG_FILE}
+        sendLog "$MY_IP not ok !" 3
         tail ${LOG_FILE} -n 5
         exit 1
     fi
@@ -258,7 +259,6 @@ run-no(){
        echo `sed "s/${IP_LIST[$i]}/${clientName[$i]}/g" /root/.ssh/known_hosts |grep ${clientName[$i]}` >> /root/.ssh/known_hosts
 
     done
-
     # 修改hosts
     for i in ${IP_LIST[*]}
     do
@@ -303,16 +303,19 @@ checkVal(){
     # PYTHON环境检查
     if [ ! -n $ZHOME  ]
     then
-        echo "path not ready!" >> ${LOG_FILE}
+        sendLog "path not ready!" 3
+        sendLog "know path zhome is : $ZHOME" 3
+        tail ${LOG_FILE} -n 5
+        exit 1
     fi
 
     # 检测脚本存放目录
     if [ -d $VD_FILE ]
     then
-        echo "*vdb will in $VD_FILE" >> ${LOG_FILE}
+        sendLog "*vdb will in $VD_FILE" 1
     else
         mkdir -p $VD_FILE
-        echo "mkdir file" >> ${LOG_FILE}
+        sendLog "mkdir file" 1
     fi
 
     # 检测vdbench目录
@@ -320,16 +323,16 @@ checkVal(){
     then
         sendLog "vdbench is in $VD_HOME" 1
     else
-        echo "no vdbench！" >> ${LOG_FILE}
+        sendLog "no vdbench！" 3
         tail ${LOG_FILE} -n 5
         exit 1
     fi
     # 参数正确性
     ## type类型
     if [ $VD_TYPE == "fc" -o $VD_TYPE == "iscsi" -o $VD_TYPE == "nfs" -o $VD_TYPE == "cifs" -o $VD_TYPE == "Ldisk" -o $VD_TYPE == "Lfile" ];then
-        echo "know run type : $VD_TYPE" >> ${LOG_FILE}
+        sendLog "know run type : $VD_TYPE" 1
     else
-        echo "type : $VD_TYPE error! no match" >> ${LOG_FILE}
+        sendLog "type : $VD_TYPE error! no match" 3
         usage
     fi
 
@@ -369,7 +372,7 @@ checkVal(){
 
     if [  `ls /bin | grep -w java |wc -l` -eq 0 ]
     then
-        echo "no java！" >> ${LOG_FILE}
+        sendLog "no java！" 3
         tail ${LOG_FILE} -n 5
         exit 1
     else
@@ -424,8 +427,8 @@ getTestListB(){
             done
         done
     done
-
-    printf "%s\n" "testBlist:${ALL_TEST_LIST[*]}" >> ${LOG_FILE}
+    sendLog "testBlist:${ALL_TEST_LIST[*]}" 0
+    # printf "%s\n" "testBlist:${ALL_TEST_LIST[*]}" >> ${LOG_FILE}
 }
 # 文件系统
 getTestListF(){
@@ -446,8 +449,8 @@ getTestListF(){
             done
         done
     done
-
-    printf "%s\n" "testFlist:${ALL_TEST_LIST[*]}" >> ${LOG_FILE}
+    sendLog "testFlist:${ALL_TEST_LIST[*]}" 0
+    #printf "%s\n" "testFlist:${ALL_TEST_LIST[*]}" >> ${LOG_FILE}
 }
 # 块设备wd设置
 getwd(){
@@ -470,8 +473,8 @@ getwd(){
         fi
 
     done
-
-    printf "%s\n" "wdlist:${WD_LIST[*]}" >> ${LOG_FILE}
+    sendLog "wdlist:${WD_LIST[*]}" 0
+    #printf "%s\n" "wdlist:${WD_LIST[*]}" >> ${LOG_FILE}
 }
 
 # 获取设备列表
@@ -515,7 +518,8 @@ getsd(){
             done
         fi
     done
-        printf "%s\n" "sdlist:${SD_LIST[*]}" >> ${LOG_FILE}
+    sendLog "sdlist:${SD_LIST[*]}" 0
+    #printf "%s\n" "sdlist:${SD_LIST[*]}" >> ${LOG_FILE}
 }
 
 
@@ -537,7 +541,8 @@ getrd(){
         fi
 
     done
-    printf "%s\n" "rdlist:${RD_LIST[*]}" >> ${LOG_FILE}
+    sendLog "rdlist:${RD_LIST[*]}" 0
+    #printf "%s\n" "rdlist:${RD_LIST[*]}" >> ${LOG_FILE}
 }
 
 
@@ -646,6 +651,13 @@ makeTotalReport(){
         do
             cat ${VD_OUT}"totals.html" | grep avg|awk '!(NR%2)' |awk -v ti=${ALL_TEST_LIST_TITLE[$i]} -v num=$i 'NR==num+1 {printf "Title:\033[36m%s\033[0m, iops:\033[32m%s\033[0m, bs:\033[35m%s\033[0m\n",ti,$3,$14}' >> ${VD_OUT}/TotalReport.z
         done
+        if [ $BLOCK[0] == "4K" ];then
+            echo "************md************" >> ${VD_OUT}/TotalReport.z
+            printf -- "|   4k随机写   |   4k随机读   |   4k顺序写   |   4k顺序读   |   1M随机写   |   1M随机读   |   1M顺序写   |   1M顺序读   |\n" >> ${VD_OUT}/TotalReport.z
+            cat ${VD_OUT}/totals.html|grep avg|awk '!(NR%2)' | awk '{printf "%-15s","|"$3"/"$4}' >> ${VD_OUT}/TotalReport.z
+            printf -- "|\n" >> ${VD_OUT}/TotalReport.z
+        fi
+        echo "**************************" >> ${VD_OUT}/TotalReport.z
     else
         if [ `cat ${VD_OUT}"totals.html" | grep avg|wc -l` -ne ${#ALL_TEST_LIST_TITLE[*]} ] ; then
             sendLog "output data error!" 3
@@ -655,8 +667,15 @@ makeTotalReport(){
         echo "**********Report***********" >> ${VD_OUT}/TotalReport.z
         for((i=0;i<${#ALL_TEST_LIST_TITLE[*]};i++))
         do
-            cat ${VD_OUT}"totals.html" | grep avg |awk -v ti=${ALL_TEST_LIST_TITLE[$i]} -v num=$i 'NR==num+1 {printf "Title:\033[36m%s\033[0m, iops:\033[32m%s\033[0m, bs:\033[35m%s\033[0m\n",ti,$3,$4}' >> ${VD_OUT}/TotalReport.z
+            cat ${VD_OUT}"totals.html" | grep avg |awk -v ti=${ALL_TEST_LIST_TITLE[$i]} -v num=$i 'NR==num+1 {printf "Title:\033[36m%-20s\033[0miops:\033[32m%-10s\033[0mbs:\033[35m%-10s\033[0m\n",ti,$3,$4}' >> ${VD_OUT}/TotalReport.z
         done
+        if [ ${BLOCK[0]} == "4K" ];then
+            echo "************md************" >> ${VD_OUT}/TotalReport.z
+            printf -- "|   4k随机写   |   4k随机读   |   4k顺序写   |   4k顺序读   |   1M随机写   |   1M随机读   |   1M顺序写   |   1M顺序读   |\n" >> ${VD_OUT}/TotalReport.z
+            awk '$3~/^[0-9]*\./{printf "%-15s","|"$3"/"$7}' ${VD_OUT}/totals.html >> ${VD_OUT}/TotalReport.z
+            printf -- "|\n" >> ${VD_OUT}/TotalReport.z
+        fi
+        echo "**************************" >> ${VD_OUT}/TotalReport.z
     fi
 
 
@@ -672,47 +691,46 @@ choiceList(){
     if [ $VD_TYPE == "nfs" ] || [ $VD_TYPE == "cifs" ]
     then
         getTestListF
-        echo -e "getTestListF \033[32mok\033[0m" >> ${LOG_FILE}
-
+        sendLog "getTestListF ok" 0
     else
         getTestListB
-        echo -e "getTestListB \033[32mok\033[0m" >> ${LOG_FILE}
+        sendLog "getTestListB ok" 0
     fi
 }
 
 
 vd-createFile(){
     checkVal
-    echo -e "checkval \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "checkval ok" 0
     getCommand
-    echo -e "getCommand \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "getCommand ok" 0
     choiceList
-    echo -e "choice $VD_TYPE \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "choiceList ok" 0
     getsd
-    echo -e "getfsd \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "getsd ok" 0
     getwd
-    echo -e "getfwd \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "getwd ok" 0
     getrd
-    echo -e "getfrd \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "getrd ok" 0
     setHost
-    echo -e "setHost \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "setHost ok" 0
     setVol
-    echo -e "setVol \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "setVol ok" 0
     setTerm
-    echo -e "setTerm \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "setTerm ok" 0
+
 
 }
 
 vd-normal(){
     vd-createFile
-    echo -e "create file \033[32mok\033[0m!" >> ${LOG_FILE}
+    sendLog "vd-createFile ok" 0
     runVdb
-    echo -e "runVdb \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "runVdb ok" 0
     getDataMakePic
-    echo -e "getDataMakePic \033[32mok\033[0m" >> ${LOG_FILE}
+    sendLog "getDataMakePic ok" 0
     makeTotalReport
-    echo -e "makeTotalReport \033[32mok\033[0m" >> ${LOG_FILE}
-
+    sendLog "makeTotalReport ok" 0
 }
 
 
@@ -736,7 +754,7 @@ vd-normal(){
 
 
 
-LINE=`getopt -o a --long help,brand:,mode:,type:,disk:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmp:,pause:,file:,out:,log:,date:,command:,fdepth:,fwidth:,fnum:,fsize: -n 'Invalid parameter' -- "$@"`
+LINE=`getopt -o a --long help,brand:,mode:,type:,disk:,ip:,size:,rdpct:,block:,fileio:,seekpct:,runtime:,interval:,warmup:,pause:,file:,out:,log:,date:,command:,fdepth:,fwidth:,fnum:,fsize: -n 'Invalid parameter' -- "$@"`
 
 if [ $? != 0 ] ; then usage; exit 1 ; fi
 
@@ -777,7 +795,7 @@ while true;do
     --pause)
     PAUSE=$2; shift 2;;
     --file)
-    VD_FILE=$2; shift 2;;
+    VD_FILE=$2; VD_OUT="$VD_FILE/vd-output/";VD_LOG="$VD_FILE/";LOG_FILE="$VD_LOG/vd$FILE_DATE.log";shift 2;;
     --out)
     VD_OUT=$2; shift 2;;
     --log)
@@ -836,7 +854,7 @@ case $MODE in
     ;;
 
 *)
-    echo "no this mode" ;exit 127;;
+    echo "no this mode!" ;exit 127;;
 esac
 
 
